@@ -1,35 +1,28 @@
 % -*- coding: utf-8 -*-
-
-\documentclass[11pt,oneside,a4paper]{article}
-\usepackage[danish]{babel}
-\usepackage[utf8]{inputenc}
-\usepackage{latexsym}
-\usepackage{listings}
-\usepackage{url}
-\usepackage{ulem}
-\usepackage{amsmath, amssymb, amsthm}
-\usepackage{graphicx}
-\newcommand{\hide}[1]{}
-\title{Rectangular Swept Sphere}
+\documentclass[11pt, oneside, a4paper, draft]{article}
+\usepackage{mikkel}
+\title{Rectangular Swept Spheres}
 \author{Mikkel Kjær Jensen}
 \date{\today}
 \begin{document}
+\pagestyle{headings}
 \maketitle
-\abstract{
+%\hide{
+%\abstract{
 %I have tested 
-}
-
+%}
+%}
+\Sfixme{write abstract}
+\clearpage
+\listoffixmes
 \tableofcontents
 
-\include{Introduktion}
-%\include{Overvejelser}
-%\include{Model}
-%\include{Implementation}
-%\include{Benchmarks}
-%\include{Analysis}
-%\include{Konklusion}
-%\include{appendix}
-%\include{bib}
-
+\include{introduktion}
+%\include{rectangularSweptSpheres}
+%\include{algorithms}
+%\include{implementation}
+%\include{comparison}
+%\include{conclusion}
+\bibliography{bib}{}
+\bibliographystyle{plain}
 \end{document}
-

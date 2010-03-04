@@ -9,18 +9,20 @@
 
 \usepackage{a4}
 \usepackage[danish]{babel}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 %\usepackage{float}
 %\usepackage{textcomp}
+\usepackage{latexsym}
+\usepackage{listings}
+\usepackage{url}
 \usepackage{fixme}
 \usepackage{enumerate}
 \usepackage{verbatim}
 \usepackage{microtype}
-\usepackage{amsmath}
+\usepackage{amsmath, amssymb, amsthm}
 \usepackage{listing}
 \usepackage{lscape}
 \usepackage{pdflscape}
-%\usepackage{ulem}
 \ifPDF
 	\usepackage[pdftex]{hyperref}
         \usepackage[pdftex]{graphicx}
@@ -35,6 +37,8 @@
 \makeatletter
 \newcommand{\sqbox}{\hfill$\square$}
 \newcommand{\hide}[1]{}
+% A command to globally silence fixmes
+\newcommand{\Sfixme}[1]{\fixme{#1}}
 \newcommand{\E}[1]{\{#1\}}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\R}{\mathbb{R}}
@@ -45,49 +49,8 @@
 \newcommand{\parDif}[1]{\frac{\partial }{\partial #1}}
 \newcommand{\grad}[3]{\nabla #1(#2) = (#3)}
 \newcommand{\gra}[3]{\nabla #1(#2)}
-\newcommand{\ngr}[1]{$\mid$#1$\mid$}
-\newcommand{\nga}[1]{|#1|}
-\newcommand{\ann}[2]{$^{#1}$[#2]}
-\newcommand{\aAuthor}[1]{\emph{#1}}
-\newcommand{\veryFew}[1]{\texttt{#1}}
 \newcommand{\pref}[1]{see \ref{#1} p. \pageref{#1}}
-\newcommand{\method}[5]{
-\subsection{#1}
-#2 
-\ \\\\\emph{Example:}
-#3
-\ \\\\\emph{Advantages and Disadvantages:}
-\ad{#4}{#5}
-}
-\newcommand{\ad}[2]{
-\subsubsection*{Advantages:}
-\begin{itemize}
-#1
-\end{itemize}
-\subsubsection*{Disadvantages:}
-\begin{itemize}
-#2
-\end{itemize}
-}
-\newcommand{\test}[5]{
-\texttt{Designation:}
-\label{#1}
-#1\\
-\texttt{Description:}
-#2\\
-\texttt{Purpose of test:}
-#3\\
-\texttt{Entries to test on}
-#4\\
-\texttt{Corpus}
-#5\\\\
-}
-
-\newcommand{\postSize}[1]{\texttt{#1}}
-\newcommand{\postAmount}[1]{\texttt{#1}}
-\newcommand{\q}[1]{\texttt{``#1''}}
-\newcommand{\forum}{web forums}
-\newcommand\ps@Standard{
-\renewcommand\@oddhead{Mikkel Kjær Jensen, CPR: 2501851747}
-\renewcommand\@evenhead{\@oddhead}
-}
+%\ps@Standard{
+%\renewcommand\@oddhead{Mikkel Kjær Jensen, CPR: 2501851747}
+%\renewcommand\@evenhead{\@oddhead}
+%}
