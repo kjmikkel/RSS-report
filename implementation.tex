@@ -31,18 +31,17 @@ Since we are only interested in the smallest minimum distance between the edges,
 Fortunately one does not need to calculate the Voronoi diagram in order to find whether an edge lies in another edges Voronoi cell. Instead, it can be done by checking which edges lies within the half-plane created by the edge.
 
 In the following, let e be the edge in A whose closest edges we want to find.  
-In practice I exploit the Voronoi properties, I create the needed plane by taking e's vector and a point in e, and check which endpoints of the edges in B lies above the plane. The minimum distance to these edges are then found.
+In practice I exploit the Voronoi properties, I create the needed plane P by taking e's vector and a point in e, and check which endpoints of the edges in B lies above\Sfixme{does this make sense? I mean sure code wise, but what is the correct termanoligy?} P. The minimum distance between these edges are then found (which resolves into the problem of finding the minimum distance between 2 line-segments).
 
-\subsection{Point in the interior}
+This process is repeated for all the edges and the smallest of the minimal distances is returned. If the smallest minimal distance is smaller than the radius of the RSS, then there might be an overlap, and further tests are needed.
 
+If no minimum distance is found, or if parts of an edge is found to be above P, and some of it below P, then it will be necesary to runt he Seperating axis test, which is described below.
 
 \subsection{Separating axis test}
 \label{sepAxis}
-
-In order to take care of the cases where the 2 rectangles either overlap or where the closest point lies inside the interior of the rectangles, I have to do an Axis-separation check, as described in \cite{237244}. The gist of the Axis-separation test is ``that two disjoint convex polytopes in 3-space can always be separated by a plane which is parallel to a face of either polytope, or parallel to an edge from each polytope'' (\cite{237244}, section 5, page. 8).
+In order to take care of the cases where the 2 rectangles either overlap or where the closest point lies inside the interior of the rectangles, I have to do an Axis-separation check, as described in \cite{237244}. The gist of the Axis-separation test is ``that two disjoint convex polytopes in 3-space can always be separated by a plane which is parallel to a face of either polytope, or parallel to an edge from each polytope'' (\cite{237244}, section 5, page. 8). If one or more Axis-seperation shows that there might be an overlap, then the system will report that further test are needed.
 
 The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's), and takes care of rectangle to rectangle axis test as a degenerate case (\cite{237244}, section 5), which is faster. 
 
 However, since each RSS has a radius, it became a question during implementation whether the system should assume that the two objects it was comparing should be treated OBB's (with a length, a width and a height), or if they were rectangles (with only a length and a width). In the end I choose to implement the axis test to take care of OBB's, and treat the overlap for rectangles as a special case (where the height of the two rectangles are 0).
-
 
