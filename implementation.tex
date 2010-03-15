@@ -7,7 +7,10 @@
 In this section I will give an overview of the implementation details of this projects. This will include choice of programming language, a discussion about the possible algorithms that could have been used \Sfixme{should this part be in the algorithm section, and if so should there be an reordering of the sections?}, extra libraries that I have found useful, as well as an overview of the classes and files that I have added to the framework.
 
 \subsection{Choice of programming language}
-Since the goal of this project is to implement the Rectangular Swept Sphere into the [whatever] \fixme{what is the framework called - found out} Java framework, there has been no question that this project must be implemented in Java.
+Since the goal of this project is to implement the Rectangular Swept Sphere into the [whatever] \fixme{what is the framework called - found out} Java framework, there has never been any doubt that as much as possible of this project should be implemented in Java - only using other languages if there were already existing, and efficient code, that implemented critical features, which were to much work to be implemented.
+
+\subsection{Use of Framework}
+Since this project is about implementing RSS in to [whatever framework], I will make heavy use of the features already existing in the framework. This will be done both to save time and avoid code duplication, but also under the assumption that the implemented features will be more efficient than what I myself could implement.
 
 \subsection{Possible choice of algorithms}
 \subsubsection{Proximity detection}
@@ -23,9 +26,23 @@ If the rectangles of A and B does not overlap, the closest points, as described 
 \end{enumerate}
 
 \subsection{Between 2 edges}
-Since we are only interested in the smallest minimum distance between the edges, it is clear that we only have calculate the minimum distance between the edges that are closest to each other. The approach in my implementation is the one found in \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams \Sfixme{give reference that explains Voronoia diagrams} to quickly decide which pair of edges are worth testing. 
+Since we are only interested in the smallest minimum distance between the edges, it is clear that we only have calculate the minimum distance between the edges that are closest to each other. The approach in my implementation is the one described \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams\footnote{For a formal description of Voronoi diagrams see \cite{compgeom:2008} Chapter 7} to quickly decide which pair of edges are worth testing. For a more detailed justification of this, see \cite{Larsen99fastproximity} section 4.3.1 - particularly Lemma 1.  
 
-Fortunately one does not need to calculate the Voronoi diagram in order to find whether an edge lies in another edges Voronoi cell. Instead, it can be done by checking which edges lies within the halfplane created by the edge.
+Fortunately one does not need to calculate the Voronoi diagram in order to find whether an edge lies in another edges Voronoi cell. Instead, it can be done by checking which edges lies within the half-plane created by the edge.
 
-In the following, let e be the edge in A whoose closest edges we want to find.  
-In practice I exploit the Voronoi properties, I create the needed plane by taking e's vector and a point in e, and check which endpoints of the edges in B lies above the plane. The distance to thouse edges are checked, while 
+In the following, let e be the edge in A whose closest edges we want to find.  
+In practice I exploit the Voronoi properties, I create the needed plane by taking e's vector and a point in e, and check which endpoints of the edges in B lies above the plane. The minimum distance to these edges are then found.
+
+\subsection{Point in the interior}
+
+
+\subsection{Separating axis test}
+\label{sepAxis}
+
+In order to take care of the cases where the 2 rectangles either overlap or where the closest point lies inside the interior of the rectangles, I have to do an Axis-separation check, as described in \cite{237244}. The gist of the Axis-separation test is ``that two disjoint convex polytopes in 3-space can always be separated by a plane which is parallel to a face of either polytope, or parallel to an edge from each polytope'' (\cite{237244}, section 5, page. 8).
+
+The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's), and takes care of rectangle to rectangle axis test as a degenerate case (\cite{237244}, section 5), which is faster. 
+
+However, since each RSS has a radius, it became a question during implementation whether the system should assume that the two objects it was comparing should be treated OBB's (with a length, a width and a height), or if they were rectangles (with only a length and a width). In the end I choose to implement the axis test to take care of OBB's, and treat the overlap for rectangles as a special case (where the height of the two rectangles are 0).
+
+
