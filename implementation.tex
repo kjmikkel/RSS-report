@@ -3,5 +3,29 @@
 \section{Implementation}
 \label{implementation}
 
-\subsection{Programming language}
+\subsection{Introduction}
+In this section I will give an overview of the implementation details of this projects. This will include choice of programming language, a discussion about the possible algorithms that could have been used \Sfixme{should this part be in the algorithm section, and if so should there be an reordering of the sections?}, extra libraries that I have found useful, as well as an overview of the classes and files that I have added to the framework.
+
+\subsection{Choice of programming language}
 Since the goal of this project is to implement the Rectangular Swept Sphere into the [whatever] \fixme{what is the framework called - found out} Java framework, there has been no question that this project must be implemented in Java.
+
+\subsection{Possible choice of algorithms}
+\subsubsection{Proximity detection}
+In the following let minDist(rec(A), rec(B)) be the minimum distance between the rectangles of RSS A and B, and max(radius(A), radius(B)) be the biggest radius of A and B.\\
+
+One approach to check if 2 Rectangular Swept Spheres, A and B, overlap, is to check the proximity of their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ max(Radius(A), radius(B)), then A and B overlaps. This is the approach found in \cite{Larsen99fastproximity}.
+
+The problem then becomes one of finding the 2 closest points, and calculating the distance.
+If the rectangles of A and B does not overlap, the closest points, as described in section 4.2.1 of \cite{Larsen9fastproximity}, lies:
+\begin{enumerate}
+\item on 2 edges
+\item in the interior of one of the rectangles
+\end{enumerate}
+
+\subsection{Between 2 edges}
+Since we are only interested in the smallest minimum distance between the edges, it is clear that we only have calculate the minimum distance between the edges that are closest to each other. The approach in my implementation is the one found in \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams \Sfixme{give reference that explains Voronoia diagrams} to quickly decide which pair of edges are worth testing. 
+
+Fortunately one does not need to calculate the Voronoi diagram in order to find whether an edge lies in another edges Voronoi cell. Instead, it can be done by checking which edges lies within the halfplane created by the edge.
+
+In the following, let e be the edge in A whoose closest edges we want to find.  
+In practice I exploit the Voronoi properties, I create the needed plane by taking e's vector and a point in e, and check which endpoints of the edges in B lies above the plane. The distance to thouse edges are checked, while 

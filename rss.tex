@@ -3,20 +3,23 @@
 \section{Rectangular Swept Spheres}
 \label{rss}
 
+\subsection{Introduction}
+In this section I will go into greater detail about the RSS, how it is defined and represented, as well as the literature that I have used in this report.
+
 \subsection{Rectangular Swept Sphere}
 The Rectangular Swept Sphere (RSS) is a 3D figure. It is defined as a rectangle in 3D, where a sphere has been swept over its surface - making it resemble a rectangular rounded pillow \Sfixme{is this a reasonable description}. An illustration of a RSS can be found on p. 10 of \cite{Larsen99fastproximity}.\Sfixme{Should I even refer to this} 
 
 \subsection{Representation of RSS}
 I have chosen to represent the RSS as a rectangle in 3D together with a radius, as described in \cite{larsen00fast}, \cite{Larsen99fastproximity} and \cite{237244}. The rectangle is made up from a 3d point which is its center, 2 unit vectors in 3d which describes the slope \fixme{is this a correct term} of the rectangle, and the length of the of the original 3d vectors.
 
-I have choosen this representation, since \cite{327244} uses it, and I intend to use the overlap algorithm found in \cite{237244}.
+I have chosen this representation, since \cite{327244} uses it, and I intend to use the overlap algorithm found in \cite{237244}.
 
 
 \subsection{Used literature}
-For this project I have used the following litterature:
+For this project I have used the following literature:
 \begin{description}
 \item[\cite{larsen00fast}] Gives an introduction to some of the problems with making Distance Queries between RSSs. The article refers \cite{Larsen99fastproximity} (by the same authors) which contains more explicit information on how to calculate the distance. 
 \item[\cite{Lotan03algorithmand}] Gives a general introduction to Monte Carlo simulation of Proteins, as well as a comparison of several data-structures and algorithms for these, for protein folding \Sfixme{Is it correct? It can be written better}
-\item[\cite{Larsen99fastproximity}] A more indepth description of how the distance queries for the RSSs can be preformed. However, it leaves the most dificult cases to \cite{237244}.
-\item[\cite{237244}] A description the algorithm for the most difficult case of RSS distance query.
+\item[\cite{Larsen99fastproximity}] A more in-depth description of how the distance queries for the RSSs can be preformed. However, it leaves the most difficult cases to \cite{237244}.
+\item[\cite{237244}] A description the algorithm for the most difficult case of RSS distance query. Although the algorithm as described is for Oriented Bounding Boxes (OBB).
 \end{description}
