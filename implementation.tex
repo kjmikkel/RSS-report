@@ -12,3 +12,21 @@ Since the goal of this project is to implement the Rectangular Swept Sphere into
 \subsection{Use of Framework}
 Since this project is about implementing RSS in to [whatever framework], I will make heavy use of the features already existing in the framework. This will be done both to save time and avoid code duplication, but also under the assumption that the implemented features will be more efficient than what I myself could implement.
 
+\subsection{Classes implemented}
+In this project I have implemented 2 ``main''\Sfixme{Try to find a better word than ``main'' to describe the classes } classes:
+\begin{itemize}
+\item Rectangle3d
+\item RSS3d
+\end{itemize}
+
+\subsubsection{Rectangle3d}
+\label{rectangle3d}
+The Rectangle3d class is used to represent a rectangle in 3 dimensional space. To represent the rectangle itself I use one center point (Point3d - a point in 3 dimensional space), 2 unit vectors (Vector3d a vector in 3 dimensional space) which describe the plane that the rectangle lies in, and 2 doubles that contains the length of the vectors. In order to comply with the other structures, the rectangle3d class implements the interfacce Volume3d.
+
+It is also in this class that I have implemented both the Minimum distance algorithm and Axis-separation algorithm. I have done so because both algorithms works on rectangles/rectangular boxes, and not only on Rectangular Swept Spheres or any other data-structures. \Sfixme{should there be something here about about what must be done when we are working on a box?}
+
+\subsubsection{RSS3d}
+\label{RSS3d}
+The RSS3d class is used to represent a Rectangular Swept Sphere in 3 dimensional space. The RSS is represeneted by a radius which is given as a double, and the rectangle is a Rectangle3d, as descried above. In order to comply with the other structures, the rectangle3d class implements the interfacce Volume3d.
+
+In order to check whether 2 RSS' intersect each other, a call is made to one of the RSS' rectangles overlap method, with the radius of the first RSS.
