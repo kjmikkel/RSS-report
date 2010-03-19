@@ -18,7 +18,7 @@ In the following let minDist(rec(A), rec(B)) be the minimum distance between the
 One approach to check if 2 Rectangular Swept Spheres, A and B, overlap, is to check the proximity of their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ max(Radius(A), radius(B)), then A and B overlaps\Sfixme{should this be Radius(A) + Radius(B)?}. This is the approach found in \cite{Larsen99fastproximity}.
 
 The problem then becomes one of finding the 2 closest points, and calculating the distance.
-Given that the rectangles do not overlap, then the possible configurations of the closest points are, according to section 4.2.1 of \cite{Larsen9fastproximity}:
+Given that the rectangles do not overlap, then the possible configurations of the closest points are, according to section 4.2.1 of \cite{Larsen99fastproximity}:
 \begin{enumerate}
 \item Both of the points lie on an edge
 \item One of the points lie in the interior of one of the rectangles, while the other either lies on the other rectangles edge or interior.
