@@ -45,3 +45,4 @@ The Axis-separation test described in \cite{237244} was designed to work on Orie
 
 However, since each RSS has a radius, it became a question during implementation whether the system should assume that the two objects it was comparing should be treated OBB's (with a length, a width and a height), or if they were rectangles (with only a length and a width). In the end I choose to implement the axis test to take care of OBB's, and treat the overlap for rectangles as a special case (where the height of the two rectangles are 0).
 
+\subsection{Heuristic for creating RSS for multiple points}

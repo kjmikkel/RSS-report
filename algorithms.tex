@@ -4,4 +4,67 @@
 \label{algorithms}
 
 \subsection{Introduction}
-In this section I will go into high-level detail about the principal algorithms that I have used in the this project. With each algorithm I will include an explanation of their use, an analysis of the algorithms run-time, as well as a discussion of possible alternatives. 
+In this section I will go into high-level detail about the principal problems that are to be solved in this project, as well as the algorithms that I have used to solve them. With each algorithm I will include an explanation of their use, an analysis of the algorithms run-time, as well as a discussion of possible alternatives. 
+
+\subsection{Intersection}
+In order to be able to use the Rectangular Swept Sphere (RSS) in the [whatever] \Sfixme{find name of framework}, it is paramount that I must find a fast way to detect when 2 RSS' are intersecting, so that it can be decided whether a fold of the protein should go ahead or not. In the following I will describe the methods I have used to check whehther or not two RSS' are intersecting.
+
+\subsubsection{Approch}
+In the algorithm I have choosen to implement, I will prefer to report a possible intersection where there might not be one, instead of failing to reprot a possible overlap. \Sfixme{Give justification - shouldn't be too hard}.
+
+\subsubsection{Proximity detection}
+In the following let minDist(rec(A), rec(B)) be the minimum distance between the rectangles of RSS A and B, and max(radius(A), radius(B)) be the biggest radius of A and B.\\
+
+One approach to check if 2 Rectangular Swept Spheres, A and B, overlap, is to check the proximity of their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ max(Radius(A), radius(B)), then A and B overlaps\Sfixme{should this be Radius(A) + Radius(B)?}. This is the approach found in \cite{Larsen99fastproximity}.
+
+The problem then becomes one of finding the 2 closest points, and calculating the distance.
+Given that the rectangles do not overlap, then the possible configurations of the closest points are, according to section 4.2.1 of \cite{Larsen9fastproximity}:
+\begin{enumerate}
+\item Both of the points lie on an edge
+\item One of the points lie in the interior of one of the rectangles, while the other either lies on the other rectangles edge or interior.
+\end{enumerate}
+
+\subsection{The points lie on 2 edges}
+Since we are only interested in the smallest minimum distance between the edges, it is clear that we only have calculate the minimum distance between the edges that are closest to each other. The approach in my implementation is the one described \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams\footnote{For a formal description of Voronoi diagrams see \cite{compgeom:2008} Chapter 7} in order to quickly decide which pair of edges are possible candidate for the smallest distance. For a more detailed justification of this, see \cite{Larsen99fastproximity} section 4.3.1 - particularly Lemma 1.  
+
+Fortunately one does not need to calculate the Voronoi diagram in order to detect which Voronoi cell an edge lies in. Instead, it can be done by checking which edges lies within the half-plane created by the edge\Sfixme{I think I have to mention their vector}. However, this has the minor disadvantage that an edge might lie in multiple halfplanes, but even in the worst case this would mean that 8 checks would have had to be made (2 checks for each edge), which clearly is better than 16 checks.\Sfixme{perhaps there should be an image illustrating this}
+
+The problem then becomes one of finding the minimum distane between 2 line-segments in 3d, and then returning the smallest of these values. If no possible candiates are found, then infinity is returned.
+
+\hide{
+In the following, let e be the edge in A whose closest edges we want to find.  
+In practice I exploit the Voronoi properties, I create the needed plane P by taking e's vector and a point in e, and check which endpoints of the edges in B lies above\Sfixme{does this make sense? I mean sure code wise, but what is the correct terminology?} P. The minimum distance between these edges are then found (which resolves into the problem of finding the minimum distance between 2 line-segments).
+
+This process is repeated for all the edges and the smallest of the minimal distances is returned. If the smallest minimal distance is smaller than the radius of the RSS, then there might be an overlap, and further tests are needed.}
+
+If there is an overlap between A and B, or the minimum distance is greater than the maximum radius, then it becomes necessary to run the separating axis test, which is described below.
+
+\subsection{Separating axis test}
+\label{sepAxis}
+In order to take care of the cases where the 2 rectangles either overlap or where the closest point lies inside the interior of the rectangles, I have to do an Axis-separation check, as described in \cite{237244}. The gist of the Axis-separation test is ``that two disjoint convex polytopes in 3-space can always be separated by a plane which is parallel to a face of either polytope, or parallel to an edge from each polytope'' (\cite{237244}, section 5, page. 8). If one or more Axis-separation shows that there might be an overlap, then the system will report that further test are needed.
+
+The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's), and takes care of rectangle to rectangle axis test as a degenerate case (\cite{237244}, section 5), which is faster. 
+
+However, since each RSS has a radius, it became a question during implementation whether the system should assume that the two objects it was comparing should be treated OBB's (with a length, a width and a height), or if they were rectangles (with only a length and a width). In the end I choose to implement the axis test to take care of OBB's, and treat the overlap for rectangles as a special case (where the height of the two rectangles are 0).
+
+\subsubsection{Order of Minimum distance and Axis seperating test}
+\label{minAxisOrder}
+A pertinent question might be whatever the order of the tests are optimal, or whether it might be better just to run the axis seperation test.
+
+In order to have this discussion make any sense, it is important to understand the purpose and the exiting condition for both methods:
+
+\begin{description}
+\item[Minimum Distance:] The minimum distance algorithm tries to find all the minimum distances it can find. In the (local) best case it finds that none of the edges are in the psudo voronoi cells\Sfixme{other description?}, and it terminates, having found the minimum distance between no edges. The exiting condition of the algorithm is when it either has checked all Voronoi cells \Sfixme{description again?} and calculated all the minimum distances, or when it finds a minimum distance that is smaller than the comined radius of the two RSS' \Sfixme{implement this in the code}. The algorithm favours the cases where the 2 RSS' might overlap.  
+
+\item[Axis Seperating:] The axis seperation algorithm tries to find an axis that seperates the 2 RSS'. In the best case, the first axis will show that the two RSS' are disjoint, and the algorithm will terminate. In the worst case the 2 RSS' are not independent, and all 15 (6 axis tests for 3 faces from each box in the RSS \Sfixme{explain definition of RSS back in appropiate section} + 9 axixes that are created by a combination of the 3 face vectors from each box\Sfixme{reformulate!}) test have to be made in the case 
+\end{description}
+
+There is no clear answer to this question, as it becomes one of priority. If one assumes that RSS' will seldom lie above or below one another, and that RSS' will often overlap, then the order is fine - as it will quickly find the minimum distance between the two RSS' - since we in the worst case has to calculate the minimum distance 8 times.
+
+However,    
+
+
+\subsection{Heuristic for creating RSS for multiple points}
+In order for the RSS to be a useful data-structure, it is clear that, given a set of points, we must be able to construct a RSS that contains all of the points. If this was not the case, then we would be unable to use RSS in a Bounding Volume Hierarchy\Sfixme{reference to text and page}, which in this context make it unsuable\Sfixme{most likely this has to be cut}. 
+
+\Sfixme{Co-variance or just wing it?}
