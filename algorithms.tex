@@ -6,7 +6,7 @@
 In this section I will go into high-level detail about the principal problems that are to be solved in this project, as well as the algorithms that I have used to solve them. With each algorithm I will include an explanation of their use, an analysis of the algorithms run-time, as well as a discussion of possible alternatives. 
 
 \subsection{Intersection}
-In order to be able to use the Rectangular Swept Sphere (RSS) in the [whatever] \Sfixme{find name of framework}, it is paramount that I must find a fast way to detect when 2 RSS' are intersecting, so that it can be decided whether a fold of the protein should go ahead or not. In the following I will describe the methods I have used to check whether or not two RSS' are intersecting.
+In order to be able to use the Rectangular Swept Sphere (RSS) in ProGAL framework \Sfixme{is that what it is called}, it is paramount that I must find a fast way to detect when 2 RSS' are intersecting, so that it can be decided whether a fold of the protein should go ahead or not. In the following I will describe the methods I have used to check whether or not two RSS' are intersecting.
 
 \subsubsection{Approach}
 In the algorithm I have chosen to implement, I will prefer to report a possible intersection where there might not be one, instead of failing to report a possible overlap. While this may give a performance penalty, since the system might have to perform more checks, it is critically important that illegal configurations of the proteins are not accepted. 
@@ -56,9 +56,68 @@ Local best case: None of the edges lies in the half-planes that indicates the  V
 
 From this it is clear that the order of the algorithm we choose will be influenced by which cases we believe to be the most common, as well as which cases we think of as the most likely. If we think that the 2 RSS' will often be above each other, or that the RSS' often will be separated, then it will be better to only run the Axis-separation test. If on the other hand we believe that RSS' won't be placed above each other, and that they often intersect, then the minimum distance algorithm, followed by the Axis-separation test is preferred.
 
-Since in the context of folding proteins are interested in being told that a fold is illegal as soon as possible (so that the next fold can be tested), I think that first running the Minimum distance algorithm, and then the Axis-separation test would improve the run-time on average\Sfixme{is it average, or is it something else} compared to if we only ran the Axis-separation test.
+Since in the context of folding proteins are interested in being told that a fold is illegal as soon as possible (so that the next fold can be tested), I think that first running the Minimum distance algorithm, and then the Axis-separation test would improve the run-time in most instances, compared to if we only ran the Axis-separation test.
 
 \subsection{Heuristic for creating RSS for multiple points}
 In order for the RSS to be a useful data-structure, it is clear that, given a set of points, we must be able to construct a RSS that contains all of the points. If this was not the case, then we would be unable to use RSS in a Bounding Volume Hierarchy\Sfixme{reference to text and page}.
 
-\Sfixme{Co-variance or just wing it?}
+In order to create the RSS from multiple points in 3d, I first find the covariance matrix\Sfixme{Should there be something about what a covariance matrix is?}, and then project all the points down into the 2 dimensional xy-plane. From these 2-dimensional points I then create a 2d rectangle in this plane, and gets the 3 corner points which defines it. These 3 points are then projected up into the plane created by the covariance matrix, and from these 3d points a 3d rectangle is constructed. I then find the maximum distance from the 3d-rectangle to the 3d points, which I set as the radius. I then use the 3d rectangle and the Radius to create the RSS.
+
+\begin{algorithm}[H]
+  \caption{CreateRSSContainingPoints}
+  \SetKwData{covar}{CovarianceMatrix}
+  \SetKwData{twodeeRec}{2dRec} \SetKwData{twodeeP}{2dPointset}
+  \SetKwData{cornTwo}{2dRectangleCornerPoints}
+  \SetKwData{cornThree}{3dRectangleCornerPoints}
+  \SetKwData{threedeeRec}{3dRec}
+  \SetKwData{return}{return}
+  \SetKwData{p}{p}
+  \SetKwInOut{Input}{input} \SetKwInOut{Output}{output}
+  \dontprintsemicolon
+  \Input{A set P of n points in 3 dimensions}
+  \Output{A RSS that contains all points in P}
+  Initialize \twodeeP, \cornThree \;
+  \covar $\gets$ makeCovarainceMatrix(P)\;
+  \ForEach{\p $\in P$}{
+    Add projectTo2d(\p) to \twodeeP \;
+  }
+  \twodeeRec $\gets$ make2dRectangle(\twodeeP) \;
+  \cornTwo $\gets$ getCornerPoints(\twodeeRec) \;
+  \ForEach{\p $\in$ \cornTwo}{
+    Add projectToCovariance(\covar) to \cornThree \;
+  }
+  \threedeeRec $\gets$ make3dRec(\cornThree) \;
+  maxDistance $\gets 0$ \;
+  \ForEach{\p $\in P$}{
+    maxDistance $\gets$ max(maxDistance, distanceToRec(\p, \threedeeRec))
+  }
+  \return makeRSS(\threedeeRec, maxDistance)
+\end{algorithm}
+
+\subsubsection{Asymptotic Runtime}
+From the algorithm it is clear that everything besides the creation of the covariance matrix runs in $O(n)$ time. Since the covariance matrix also is created in $O(n)$ time, it is clear that the entire algorithm runs in $O(n)$ time.
+
+\subsection{Algorithm to create a RSS containing 2 RSS'}
+In order to combine  2 RSS', rss1 and rss2, I first find the 6 points that define the 2 RSS'. I then create a new RSS, rss3, which contains all 6 points, using the algorithm above. Once that is done, I add  max(radius(rss1), radius(rss2)) to the radius of rss3, ensuring that all points contained in both rss1 and rss2 are contained in RSS3. This process can easily be extended to multiple RSS', by first collecting all the points, 
+
+\begin{algorithm}[H]
+  \caption{CombinedRSS}
+  \SetKwData{points}{pointsSet}
+  \SetKwData{crss}{CombinedRSS}
+  \SetKwData{return}{return}
+  \SetKwInOut{Input}{input} \SetKwInOut{Output}{output}
+  \dontprintsemicolon
+  \Input{2 RSS' rss1 and rss2}
+  \Output{A RSS that contains both RSS'}
+  Initialize \points \;
+  Add cornerPoints(rss1) and cornerPoints(rss2) to \points \;
+  maxRadius $\gets$ max(radius(rss1), radius(rss2)) \;
+  \crss $\gets$ CreateRSSContainingPoints(\points) \;
+  \crss $\gets$ addRadius(\crss, maxRadius) \;
+  \return \crss
+\end{algorithm}
+
+\subsubsection{Runtime}
+It is clear that the algorithm must run in $O(1)$ since \texttt{CreateRSS} runs in $O(n)$, and it will always be called with $O(1)$ points.
+
+%\subsection{Non-axis aligned rectangle}

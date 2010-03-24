@@ -7,7 +7,7 @@ rm *.bbl
 rm *.blg
 rm *.lox
 
-pdflatex RSS\ Projekt.tex
-bibtex RSS\ Project.tex
-pdflatex RSS\ Projekt.tex
-pdflatex RSS\ Projekt.tex
+pdflatex RSS-Project.tex
+bibtex RSS-Project.tex
+pdflatex RSS-Project.tex
+pdflatex RSS-Project.tex

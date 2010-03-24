@@ -7,13 +7,13 @@
 In this section I will give an overview of the implementation details of this projects. This will include choice of programming language, libraries that I have found useful, as well as an overview of the classes and files that I have added to the framework.
 
 \subsection{Choice of programming language}
-Since the goal of this project is to implement the Rectangular Swept Sphere into the [whatever] \fixme{what is the framework called - found out} Java framework, there has never been any doubt that as much as possible of this project should be implemented in Java - only using other languages if there were already existing, and efficient code, that implemented critical features, which were to much work to be implemented.
+Since the goal of this project is to implement the Rectangular Swept Sphere into the ProGAL Java framework \fixme{Is this what the framework is called?}, there has never been any doubt that as much as possible of this project should be implemented in Java - only using other languages if there were already existing, and efficient code, that implemented critical features, which were to much work to be implemented.
 
 \subsection{Use of Framework}
-Since this project is about implementing RSS in to [whatever framework], I will make heavy use of the features already existing in the framework. This will be done both to save time and avoid code duplication, but also under the assumption that the implemented features will be more efficient than what I myself could implement.
+Since this project is about implementing RSS in the ProGAL framework, I will make heavy use of the features already existing in the framework. This will be done both to save time and avoid code duplication, but also under the assumption that the implemented features will be more efficient than what I myself could implement.
 
 \subsection{Classes implemented}
-In this project I have implemented 2 ``main''\Sfixme{Try to find a better word than ``main'' to describe the classes } classes:
+In this project I have implemented 2 classes:
 \begin{itemize}
 \item Rectangle3d
 \item RSS3d
@@ -21,14 +21,14 @@ In this project I have implemented 2 ``main''\Sfixme{Try to find a better word t
 
 \subsubsection{Rectangle3d}
 \label{rectangle3d}
-The Rectangle3d class is used to represent a rectangle in 3 dimensional space. To represent the rectangle itself I use one center point (Point3d - a point in 3 dimensional space), 2 unit vectors (Vector3d a vector in 3 dimensional space) which describe the plane that the rectangle lies in, and 2 doubles that contains the length of the vectors. In order to comply with the other structures, the rectangle3d class implements the interfacce Volume3d.
+The Rectangle3d class is used to represent a rectangle in 3 dimensional space. To represent the rectangle itself I use one center point (Point3d - a point in 3 dimensional space), 2 unit vectors (Vector3d a vector in 3 dimensional space) which describe the plane that the rectangle lies in, and 2 doubles that contains the length of the vectors. In order to comply with the other structures, the rectangle3d class implements the interface Volume3d.
 
-It is also in this class that I have implemented both the Minimum distance algorithm and Axis-separation algorithm. I have done so because both algorithms works on rectangles/rectangular boxes, and not only on Rectangular Swept Spheres or any other data-structures. While the algorithm is suited for rectangles, it can easily be extended for boxes, by introducing the radiuses of the 2 RSS'. See \ref{} page \pageref{} for more detail.
+It is also in this class that I have implemented both the Minimum distance algorithm and Axis-separation algorithm. I have done so because both algorithms works on rectangles/rectangular boxes, and not only on Rectangular Swept Spheres or any other data-structures. While the algorithm is suited for rectangles, it can easily be extended for boxes, by introducing the radius's of the 2 RSS'. See \ref{} page \pageref{} for more detail.
 
 \subsubsection{RSS3d}
 \label{RSS3d}
-The RSS3d class is used to represent a Rectangular Swept Sphere in 3 dimensional space. The RSS is represeneted by a radius which is given as a double, and the rectangle is a Rectangle3d, as descried above. In order to comply with the other structures, the rectangle3d class implements the interfacce Volume3d.
+The RSS3d class is used to represent a Rectangular Swept Sphere in 3 dimensional space. The RSS is represented by a radius which is given as a double, and the rectangle is a Rectangle3d, as descried above. In order to comply with the other structures, the rectangle3d class implements the interface Volume3d.
 
-In order to check whether 2 RSS' intersect each other, a call is made to one of the RSS' rectangles overlap method, with the radius of the first RSS.
+In order to check whether 2 RSS' intersect, one of the RSS' overlap method is called with the other RSS as argument.
 
-\subsection{}
+When constructing the RSS from a set of points, the system currently currently creates an axis-oriented rectangle in 2d, which is then projected into 3d. This implementation is clearly inferior to one that uses a non axis-oriented rectangle, since the latter solution would mean more compact bounding volumes - and would presumably reduce the number of intersection tests.    
