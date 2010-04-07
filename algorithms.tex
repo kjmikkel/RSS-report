@@ -6,6 +6,7 @@
 In this section I will go into high-level detail about the principal problems that are to be solved in this project, as well as the algorithms that I have used to solve them. With each algorithm I will include an explanation of their use, an analysis of the algorithms run-time, as well as a discussion of possible alternatives. 
 
 \subsection{Intersection}
+\label{intersection}
 In order to be able to use the Rectangular Swept Sphere (RSS) in ProGAL framework, it is paramount that I must find a fast way to detect when 2 RSS' are intersecting, so that it can be decided whether a fold of the protein should go ahead or not. In the following I will describe the methods I have used to check whether or not two RSS' are intersecting.
 
 \subsubsection{Approach}
@@ -27,7 +28,7 @@ Given that the rectangles do not overlap, then the possible configurations of th
 \label{minimumDistance}
 Since we are only interested in the smallest minimum distance between pairs of edges, it is clear that we only have calculate the minimum distance between the edges that are closest to each other. The approach in my implementation is the one described in \cite{larsen00fast} and \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams\footnote{For a formal description of Voronoi diagrams see \cite{compgeom:2008} Chapter 7} in order to quickly decide which pair of edges might be closest together. For a more detailed justification of this, see \cite{larsen00fast} section 4.2 and \cite{Larsen99fastproximity} section 4.3.1 - particularly Lemma 1.
 
-Fortunately one does not need to calculate the Voronoi diagram in order to detect which Voronoi cell an edge lies in. Let E be the edge whose closest edges we wish to find, \textbf{n} be the perpendicular vector to E, then the face defined by -\textbf{n} and a point on E will define the half-plane D. All edges that lies, wholly or partly, within D are candidates for the closest edge, as described in \cite{larsen00fast}. Using this approch instead of explicitly calculating the Vornoi diagram has the disadvantage that an edge might lie in multiple half-planes, but even in the worst case this would mean that 8 checks would have had to be made (2 checks for each edge), which clearly is better than 16 checks.\Sfixme{perhaps there should be an image illustrating this - yes there probably should}
+Fortunately one does not need to calculate the Voronoi diagram in order to detect which Voronoi cell an edge lies in. Let E be the edge whose closest edges we wish to find, \textbf{n} be the perpendicular vector to E, then the face defined by -\textbf{n} and a point on E will define the half-plane D. All edges that lies, wholly or partly, within D are candidates for the closest edge, as described in \cite{larsen00fast}. Using this approach instead of explicitly calculating the Voronoi diagram has the disadvantage that an edge might lie in multiple half-planes, but even in the worst case this would mean that 8 checks would have had to be made (2 checks for each edge), which clearly is better than 16 checks.\Sfixme{perhaps there should be an image illustrating this - yes there probably should}
 
 The problem then becomes one of finding the minimum distance between 2 line-segments in 3 dimensions, and then returning the smallest of these values. If no possible candidates are found, then infinity is returned.
 
@@ -38,6 +39,8 @@ If RSS' overlap, or if one of the points closest to one of the rectangles lies i
 In order to take care of the cases where 2 rectangles either overlap or where the closest point lies inside the interior of the rectangles, I have to do an Axis-separation check, as described in \cite{237244}. The gist of the Axis-separation test is ``that two disjoint convex polytopes in 3-space can always be separated by a plane which is parallel to a face of either polytope, or parallel to an edge from each polytope'' (\cite{237244}, section 5, page. 8).
 
 The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's), and takes care of rectangle to rectangle axis test as a degenerate, and faster, case (\cite{237244}, section 5). 
+
+The description of the axis-separation test in \cite{237244} notes that ``The placement of the axis is immaterial, so we assume it passes through the center of A'' (\cite{237244}, section 5, page 9) - which essential rotates both A and B so that A aligns with the axis'. Doing this would make it much easier to do both loop unrolling \Sfixme{really?} and use some the optimisations found in the paper. Due to time constraints, I have not done in my implementation.
 
 \hide{
 However, since each RSS has a radius, this has to be factored into the whether the system should assume that the two objects it was comparing should be treated OBB's (with a length, a width and a height), or if they were rectangles (with only a length and a width). In the end I choose to implement the axis test to take care of OBB's, and treat the overlap for rectangles as a special case (where the height of the two rectangles are 0).
@@ -75,11 +78,13 @@ If we think that it is likely that a RSS will lie in the interior or another (ei
 
 Since in the context of folding proteins are interested in being told that a fold is illegal as soon as possible (so that the next fold can be tested\footnote{In a BVH, and thus in practice, we furthermore have the case that a detected overlap will lead to further tests - making it very important that cheap collision tests are possible}), I think that first running the Minimum distance algorithm, and then the Axis-separation test would improve the run-time in most instances, compared to if we only ran the Axis-separation test.
 
+A difference 
+
 \subsection{Heuristic for creating RSS for multiple points}
 In order for the RSS to be a useful data-structure, it is clear that I have to find an algorithm that given a set of points, constructs a RSS that contains all of the points. The criteria for a good algorithm is one that creates a RSS that contains all the points, and which has the smallest possible volume - the speed of the algorithm is less important than these considerations. Ass a result of this, I will choose to use volume as the main benchmark to measure the quality of the solution.
 
 Doing the project I have tried 2 main algorithms for creating the RSS:
-
+\hide{
 \subsubsection{First solution}
 In order to create the RSS from multiple points in 3d, I first find the covariance matrix\Sfixme{Should there be something about what a covariance matrix is?}, and then project all the points down into the 2 dimensional xy-plane. From these 2-dimensional points I then create a 2d rectangle in this plane, and gets the 3 corner points which defines it. These 3 points are then projected up into the plane created by the covariance matrix, and from these 3d points a 3d rectangle is constructed. I then find the maximum distance from the 3d-rectangle to the 3d points, which I set as the radius. I then use the 3d rectangle and the Radius to create the RSS.
 
@@ -115,8 +120,8 @@ In order to create the RSS from multiple points in 3d, I first find the covarian
 \end{algorithm}
 
 \subsubsection{Second solution}
-
-In the second Algorithm I try to exploit the properties of all the eigenvectors of the covariance matrix. The idea is to use the directly use the eigenvectors to decide the vectors for the longest side (the eigenvector with the greatest length), the second longest side (the eigenvector with the second greatest length) and the radius (the eigenvector with the smallest length). For each of these vectors, I then create the plane with them as its vector, and which goes through the origo, and then finds the greatest distance between a pair of projected points, which then is used as the the length of the vector in question.
+}
+In the second Algorithm I try to exploit the properties of all the eigen vectors of the covariance matrix. The idea is to use the directly use the eigen vectors to decide the vectors for the longest side (the eigen-vector with the greatest length), the second longest side (the eigen-vector with the second greatest length) and the radius (the eigen-vector with the smallest length). For each of these vectors, I then create the plane with them as its vector, and which goes through the origo, and then finds the greatest distance between a pair of projected points, which then is used as the the length of the vector in question.
 
 While I find the pair with the greatest distance for the 3 vectors, I also find the point that lies between these two points. Since these points are likely to be different, find the absolute difference of the 3 points 3 coordinates, and add these values to their respective vector's length. The center point can then be chosen arbitrarily.
 
@@ -135,12 +140,12 @@ While I find the pair with the greatest distance for the 3 vectors, I also find 
   \eigen $\gets$ getEigen(\covar) \;
   \eigen $\gets$ sort(\eigen) \;
   (longest, centerPoint1) $\gets$ getLongestDistance(\eigen[2], points) \;
-  (second, centerPoint2) $\gets$ getLongestDistance(\eigen[1], points) \;
-  (radius, centerPoint3) $\gets$ getLongestDistance(\eigen[0], points) \;
+  (middle, centerPoint2) $\gets$ getLongestDistance(\eigen[1], points) \;
+  (shortest, centerPoint3) $\gets$ getLongestDistance(\eigen[0], points) \;
   centerPointDiff $\gets$ getAbsCenterDiff(centerPoint1, centerPoint2, centerPoint3) \;
   add centerPointDiff[0] to longest, add centerPointDiff[1] to second, add centerPointDiff[2] to radius \;
-  \threedeeRec $\gets$ 3dRec(centerPoint1, eigenvecs[2].scaledTo(longest), eigenvecs[1].scaledTo(second)) \;
-  \return RSS(\threedeeRec, radius) \;
+  \threedeeRec $\gets$ 3dRec(centerPoint1, \eigen[2].scaledTo(shortest), \eigen[1].scaledTo(middle)) \;
+  \return RSS(\threedeeRec, shortest) \;
 \end{algorithm}
 
 \subsubsection{Asymptotic Runtime}
