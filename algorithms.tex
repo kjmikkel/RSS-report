@@ -15,13 +15,13 @@ In the algorithm I have chosen to implement, I will prefer to report a possible 
 \subsubsection{Minimum distance}
 In the following let minDist(rec(A), rec(B)) be the minimum distance between the rectangles of RSS A and B, radius(A) is the radius of A.\\
 
-One approach to check if 2 Rectangular Swept Spheres, A and B, overlap, is to check the minimum distance between their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ Radius(A) + radius(B) \Sfixme{implement in code and show illustration}, then A and B overlaps. This is the approach found in \cite{Larsen99fastproximity}.
+One approach to check if 2 RSS', A and B, overlap, is to check the minimum distance between their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ Radius(A) + radius(B) \Sfixme{implement in code and show illustration}, then A and B overlaps. This is the approach found in \cite{Larsen99fastproximity}.
 
 The problem then becomes one of finding the 2 closest points between rec(A) and rec(B), and calculating the distance.
 Given that the rectangles do not overlap, then the possible configurations of the closest points are, according to section 4.2.1 of \cite{Larsen99fastproximity}:
 \begin{enumerate}
 \item Both of the points lie on an edge
-\item One of the points lie in the interior of one of the rectangles, while the other point either lies on the other rectangles edge or interior.
+\item One of the points lie in the interior of one of the rectangles (where the other point lies is irrelevant).
 \end{enumerate}
 
 \subsection{The points lie on 2 edges}
@@ -40,7 +40,7 @@ In order to take care of the cases where 2 rectangles either overlap or where th
 
 The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's), and takes care of rectangle to rectangle axis test as a degenerate, and faster, case (\cite{237244}, section 5). 
 
-The description of the axis-separation test in \cite{237244} notes that ``The placement of the axis is immaterial, so we assume it passes through the center of A'' (\cite{237244}, section 5, page 9) - which essential rotates both A and B so that A aligns with the axis'. Doing this would make it much easier to do both loop unrolling \Sfixme{really?} and use some the optimisations found in the paper. Due to time constraints, I have not done in my implementation.
+
 
 \hide{
 However, since each RSS has a radius, this has to be factored into the whether the system should assume that the two objects it was comparing should be treated OBB's (with a length, a width and a height), or if they were rectangles (with only a length and a width). In the end I choose to implement the axis test to take care of OBB's, and treat the overlap for rectangles as a special case (where the height of the two rectangles are 0).
@@ -81,47 +81,9 @@ Since in the context of folding proteins are interested in being told that a fol
 A difference 
 
 \subsection{Heuristic for creating RSS for multiple points}
-In order for the RSS to be a useful data-structure, it is clear that I have to find an algorithm that given a set of points, constructs a RSS that contains all of the points. The criteria for a good algorithm is one that creates a RSS that contains all the points, and which has the smallest possible volume - the speed of the algorithm is less important than these considerations. Ass a result of this, I will choose to use volume as the main benchmark to measure the quality of the solution.
+In order for the RSS to be a useful data-structure, it is clear that I have to find an algorithm that given a set of points, constructs a RSS that contains all of the points. The criteria for a good algorithm is one that creates a RSS that contains all the points, and which has the smallest possible volume - the speed of the algorithm is less important than these considerations.
 
-Doing the project I have tried 2 main algorithms for creating the RSS:
-\hide{
-\subsubsection{First solution}
-In order to create the RSS from multiple points in 3d, I first find the covariance matrix\Sfixme{Should there be something about what a covariance matrix is?}, and then project all the points down into the 2 dimensional xy-plane. From these 2-dimensional points I then create a 2d rectangle in this plane, and gets the 3 corner points which defines it. These 3 points are then projected up into the plane created by the covariance matrix, and from these 3d points a 3d rectangle is constructed. I then find the maximum distance from the 3d-rectangle to the 3d points, which I set as the radius. I then use the 3d rectangle and the Radius to create the RSS.
-
-\begin{algorithm}[H]
-  \caption{CreateRSSContainingPoints}
-  \SetKwData{covar}{CovarianceMatrix}
-  \SetKwData{twodeeRec}{2dRec} \SetKwData{twodeeP}{2dPointset}
-  \SetKwData{cornTwo}{2dRectangleCornerPoints}
-  \SetKwData{cornThree}{3dRectangleCornerPoints}
-  \SetKwData{threedeeRec}{3dRec}
-  \SetKwData{return}{return}
-  \SetKwData{p}{p}
-  \SetKwInOut{Input}{input} \SetKwInOut{Output}{output}
-  \dontprintsemicolon
-  \Input{A set P of n points in 3 dimensions}
-  \Output{A RSS that contains all points in P}
-  Initialize \twodeeP, \cornThree \;
-  \covar $\gets$ makeCovarainceMatrix(P)\;
-  \ForEach{\p $\in P$}{
-    Add projectTo2d(\p) to \twodeeP \;
-  }
-  \twodeeRec $\gets$ make2dRectangle(\twodeeP) \;
-  \cornTwo $\gets$ getCornerPoints(\twodeeRec) \;
-  \ForEach{\p $\in$ \cornTwo}{
-    Add projectToCovariance(\covar) to \cornThree \;
-  }
-  \threedeeRec $\gets$ make3dRec(\cornThree) \;
-  maxDistance $\gets 0$ \;
-  \ForEach{\p $\in P$}{
-    maxDistance $\gets$ max(maxDistance, distanceToRec(\p, \threedeeRec))
-  }
-  \return makeRSS(\threedeeRec, maxDistance)
-\end{algorithm}
-
-\subsubsection{Second solution}
-}
-In the second Algorithm I try to exploit the properties of all the eigen vectors of the covariance matrix. The idea is to use the directly use the eigen vectors to decide the vectors for the longest side (the eigen-vector with the greatest length), the second longest side (the eigen-vector with the second greatest length) and the radius (the eigen-vector with the smallest length). For each of these vectors, I then create the plane with them as its vector, and which goes through the origo, and then finds the greatest distance between a pair of projected points, which then is used as the the length of the vector in question.
+In the implement algorithm I try to exploit the properties of all the eigen vectors of the covariance matrix. The idea is to use the directly use the eigen vectors to decide the vectors for the longest side (the eigen-vector with the greatest length), the second longest side (the eigen-vector with the second greatest length) and the radius (the eigen-vector with the smallest length). For each of these vectors, I then create the plane with them as its vector, and which goes through the origo, and then finds the greatest distance between a pair of projected points, which then is used as the the length of the vector in question.
 
 While I find the pair with the greatest distance for the 3 vectors, I also find the point that lies between these two points. Since these points are likely to be different, find the absolute difference of the 3 points 3 coordinates, and add these values to their respective vector's length. The center point can then be chosen arbitrarily.
 
@@ -144,26 +106,15 @@ While I find the pair with the greatest distance for the 3 vectors, I also find 
   (shortest, centerPoint3) $\gets$ getLongestDistance(\eigen[0], points) \;
   centerPointDiff $\gets$ getAbsCenterDiff(centerPoint1, centerPoint2, centerPoint3) \;
   add centerPointDiff[0] to longest, add centerPointDiff[1] to second, add centerPointDiff[2] to radius \;
-  \threedeeRec $\gets$ 3dRec(centerPoint1, \eigen[2].scaledTo(shortest), \eigen[1].scaledTo(middle)) \;
+  \threedeeRec $\gets$ 3dRec(centerPoint1, \eigen[2].scaledTo(longest, \eigen[1].scaledTo(middle)) \;
   \return RSS(\threedeeRec, shortest) \;
 \end{algorithm}
 
 \subsubsection{Asymptotic Runtime}
-\begin{description}
-\item[First algorithm:] For the first algorithm it is clear that everything besides the creation of the covariance matrix runs in $O(n)$ time. Since the covariance matrix also is created in $O(n)$ time, it is clear that the entire algorithm runs in $O(n)$ time.
-
-\item[Second algorithm:] The subroutine that finds the covariance matrix runs in $O(n)$. The subroutine that finds the distance between every pair of of points runs in $O(n^2)$, and everything else runs in constant time. Thus the algorithm must have an asymptotic runtime of $O(n^2)$.  
-\end{description}
+The subroutine that finds the covariance matrix runs in $O(n)$. The subroutine that finds the distance between every pair of of points runs in $O(n^2)$, and everything else runs in constant time. Thus the algorithm must have an asymptotic runtime of $O(n^2)$.
 
 \subsubsection{Proofs}
-\begin{description}
 \item[First algorithm:]
-
-\item[Second algorithm:]
-\end{description}
-
-\subsubsection{Comparisons}
-For the comparisons of an implementation of the 2 algorithms, see \ref{algoComp} on page \pageref{algoComp}.
 
 \subsection{Algorithm to create a RSS containing 2 RSS'}
 In order to combine  2 RSS', rss1 and rss2, I first find the 6 points that define the 2 RSS'. I then create a new RSS, rss3, which contains all 6 points, using the algorithm above. Once that is done, I add  max(radius(rss1), radius(rss2)) to the radius of rss3, ensuring that all points contained in both rss1 and rss2 are contained in RSS3. This process can easily be extended to multiple RSS', by first collecting all the points, 
