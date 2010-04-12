@@ -13,22 +13,41 @@ In order to be able to use the Rectangular Swept Sphere (RSS) in ProGAL framewor
 In the algorithm I have chosen to implement, I will prefer to report a possible intersection where there might not be one, instead of failing to report a possible overlap. While this may give a performance penalty, it is critically important that illegal configurations of the proteins are not accepted. Furthermore, such a penalty will be small in most cases.
 
 \subsubsection{Minimum distance}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{figures/normalInter}
+\caption{\label{normal-inter}An example of 2 RSS intersection}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{figures/sepAxis}
+\caption{\label{sep-Axis}Where one of the RSS lies above and ``inside'' the other}
+\end{figure}
+
 In the following let minDist(rec(A), rec(B)) be the minimum distance between the rectangles of RSS A and B, radius(A) is the radius of A.\\
 
-One approach to check if 2 RSS', A and B, overlap, is to check the minimum distance between their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ Radius(A) + radius(B) \Sfixme{implement in code and show illustration}, then A and B overlaps. This is the approach found in \cite{Larsen99fastproximity}.
+One approach to check if 2 RSS', A and B, overlap, is to check the minimum distance between their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ Radius(A) + radius(B) - see figure \ref{normal-inter} \Sfixme{consider whether a simpler illustration would be better}, then A and B overlaps. This is the approach found in \cite{Larsen99fastproximity}.
 
 The problem then becomes one of finding the 2 closest points between rec(A) and rec(B), and calculating the distance.
 Given that the rectangles do not overlap, then the possible configurations of the closest points are, according to section 4.2.1 of \cite{Larsen99fastproximity}:
 \begin{enumerate}
-\item Both of the points lie on an edge
-\item One of the points lie in the interior of one of the rectangles (where the other point lies is irrelevant).
+\item Both of the points lie on an edge. This is the situation illustrated in figure \ref{normal-inter}.
+\item One of the points lie in the interior of one of the rectangles (where the other point lies is irrelevant). One such example is illustrated in 
 \end{enumerate}
 
 \subsection{The points lie on 2 edges}
 \label{minimumDistance}
-Since we are only interested in the smallest minimum distance between pairs of edges, it is clear that we only have calculate the minimum distance between the edges that are closest to each other. The approach in my implementation is the one described in \cite{larsen00fast} and \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams\footnote{For a formal description of Voronoi diagrams see \cite{compgeom:2008} Chapter 7} in order to quickly decide which pair of edges might be closest together. For a more detailed justification of this, see \cite{larsen00fast} section 4.2 and \cite{Larsen99fastproximity} section 4.3.1 - particularly Lemma 1.
+Since we are only interested in the smallest minimum distance between pairs of edges, it is clear that we only have calculate the minimum distance between the edges that are closest to each other. The approach in my implementation is the one described in \cite{larsen00fast} and \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams\footnote{For a formal description of Voronoi diagrams see \cite{compgeom:2008} Chapter 7} in order to quickly decide which pair of edges might be closest together. For a more detailed justification of this, see \cite{larsen00fast} section 4.2 and \cite{Larsen99fastproximity} section 4.3.1 - particularly Lemma 1. 
 
-Fortunately one does not need to calculate the Voronoi diagram in order to detect which Voronoi cell an edge lies in. Let E be the edge whose closest edges we wish to find, \textbf{n} be the perpendicular vector to E, then the face defined by -\textbf{n} and a point on E will define the half-plane D. All edges that lies, wholly or partly, within D are candidates for the closest edge, as described in \cite{larsen00fast}. Using this approach instead of explicitly calculating the Voronoi diagram has the disadvantage that an edge might lie in multiple half-planes, but even in the worst case this would mean that 8 checks would have had to be made (2 checks for each edge), which clearly is better than 16 checks.\Sfixme{perhaps there should be an image illustrating this - yes there probably should}
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{figures/vorCheap}
+\caption{\label{vor-cheap}An illustration of the cheap Voronoi diagram method (2d and without radius for simplification). The letters indicate which areas are closest to edges. Areas which multiple letters are closest to multiple edges. The edges of RSS2 that either lie completely, or partially in area 3 will be checked by both RSS1's edge a and d. The edges of RSS2 that lies entirely within area 5 will only be checked by RSS1's edge d.}
+\end{figure}
+
+Fortunately one does not need to calculate the Voronoi diagram in order to detect which Voronoi cell an edge lies in. Let E be the edge whose closest edges we wish to find, \textbf{n} be the perpendicular vector to E, then the face defined by -\textbf{n} and a point on E will define the half-plane D. All edges that lies, wholly or partly, within D are candidates for the closest edge, as described in \cite{larsen00fast}. Using this approach instead of explicitly calculating the Voronoi diagram has the disadvantage that an edge might lie in multiple half-planes, but even in the worst case this would mean that 8 checks would have had to be made (2 checks for each edge), which clearly is better than 16 checks. See figure \ref{vor-cheap} for an example of this.
 
 The problem then becomes one of finding the minimum distance between 2 line-segments in 3 dimensions, and then returning the smallest of these values. If no possible candidates are found, then infinity is returned.
 
@@ -36,15 +55,10 @@ If RSS' overlap, or if one of the points closest to one of the rectangles lies i
 
 \subsection{Separating axis test}
 \label{sepAxis}
+
 In order to take care of the cases where 2 rectangles either overlap or where the closest point lies inside the interior of the rectangles, I have to do an Axis-separation check, as described in \cite{237244}. The gist of the Axis-separation test is ``that two disjoint convex polytopes in 3-space can always be separated by a plane which is parallel to a face of either polytope, or parallel to an edge from each polytope'' (\cite{237244}, section 5, page. 8).
 
-The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's), and takes care of rectangle to rectangle axis test as a degenerate, and faster, case (\cite{237244}, section 5). 
-
-
-
-\hide{
-However, since each RSS has a radius, this has to be factored into the whether the system should assume that the two objects it was comparing should be treated OBB's (with a length, a width and a height), or if they were rectangles (with only a length and a width). In the end I choose to implement the axis test to take care of OBB's, and treat the overlap for rectangles as a special case (where the height of the two rectangles are 0).
-}
+The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's), and takes care of rectangle to rectangle axis test as a degenerate, and faster, case (\cite{237244}, section 5).
 
 \subsubsection{Order of Minimum distance and Axis separating test}
 \label{minAxisOrder}
@@ -89,6 +103,7 @@ While I find the pair with the greatest distance for the 3 vectors, I also find 
 
 \begin{algorithm}[H]
   \caption{CreateRSSContainingPoints}
+  \label{create-algo}
   \SetKwData{covar}{CovarianceMatrix}
   \SetKwData{eigen}{EigenVectors}
   \SetKwData{threedeeRec}{3dRec}
@@ -111,16 +126,14 @@ While I find the pair with the greatest distance for the 3 vectors, I also find 
 \end{algorithm}
 
 \subsubsection{Asymptotic Runtime}
-The subroutine that finds the covariance matrix runs in $O(n)$. The subroutine that finds the distance between every pair of of points runs in $O(n^2)$, and everything else runs in constant time. Thus the algorithm must have an asymptotic runtime of $O(n^2)$.
-
-\subsubsection{Proofs}
-\item[First algorithm:]
+The subroutine that finds the covariance matrix for algorithm \ref{create-algo} runs in $O(n)$. The subroutine that finds the distance between every pair of of points runs in $O(n^2)$, and everything else runs in constant time. Thus the algorithm must have an asymptotic runtime of $O(n^2)$.
 
 \subsection{Algorithm to create a RSS containing 2 RSS'}
 In order to combine  2 RSS', rss1 and rss2, I first find the 6 points that define the 2 RSS'. I then create a new RSS, rss3, which contains all 6 points, using the algorithm above. Once that is done, I add  max(radius(rss1), radius(rss2)) to the radius of rss3, ensuring that all points contained in both rss1 and rss2 are contained in RSS3. This process can easily be extended to multiple RSS', by first collecting all the points, 
 
 \begin{algorithm}[H]
   \caption{CombinedRSS}
+  \label{combine-algo}
   \SetKwData{points}{pointsSet}
   \SetKwData{crss}{CombinedRSS}
   \SetKwData{return}{return}
@@ -136,7 +149,7 @@ In order to combine  2 RSS', rss1 and rss2, I first find the 6 points that defin
   \return \crss
 \end{algorithm}
 
-\subsubsection{Runtime}
-It is clear that the algorithm must run in $O(1)$ since \texttt{CreateRSS} runs in $O(n)$, and it will always be called with $O(1)$ points.
+\subsubsection{Asymptotic Runtime}
+It is clear that algorithm \ref{combine-algo} must run in $O(n)$, where n is the number of points, since \texttt{CreateRSS} runs in $O(n)$. 
 
 %\subsection{Non-axis aligned rectangle}

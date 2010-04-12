@@ -11,6 +11,10 @@ Finally I will discuss possible future projects.
 While it at the current state is hard to truly gauge the quality of the implementation, it is clear that compared to other, already implemented Bounding Volumes in ProGAL, such as Capsules, that the the detection speed of overlapping RSS' leaves much to be desired.
 
 \subsection{Future work}
-In order to properly gauge the efficiency of my implementation, I feel that it should be implemented with Bounding Volume Hierarchies, and thoroughly tested against Oriented Bounding Boxes. I am however of the opinion that the current implementation of the RSS', and especially the code to detect overlap, leaves room for optimizations, which also should be part of the project. Another aspect worth investigating would be the implementation of non-axis aligned RSS (as mentioned in \ref{RSS3d}), and compare it with the regular RSS.
+In order to properly gauge the efficiency of my implementation, I feel that it should be implemented with Bounding Volume Hierarchies, and thoroughly tested against Oriented Bounding Boxes. I am however of the opinion that the current implementation of the overlap code for RSS', leaves room for optimizations, which also should be looked into. 
 
-Another Swept Sphere variation it might be worth looking into is Triangular Swept Spheres (TSS), where instead of a rectangle or a line (as is the case in RSS and LSS) a triangle is used as the surface for the sphere to swept through.
+Another optimization would be to experiment on how best to reduce the volume of the RSS, giving it a tighter fit around the point-set it was created from.
+
+Another Swept Sphere variation it might be worth looking into is Triangular Swept Spheres (TSS), where instead of a rectangle or a line (as is the case in RSS and LSS) a triangle is used as the surface for the sphere to swept through. 
+
+Another avenue of research could be to check whether the OBB data structure could be altered and inspired from the RSS (such as making it from a 3D rectangle, and giving it a radius) and try to implement different detection methods (such as implementing a OBB version of the minimum distance algorithm implemented for the RSS), to see if it could make the overlap detection run in less time.
