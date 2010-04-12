@@ -39,7 +39,7 @@ The RSS3d class is used to represent a Rectangular Swept Sphere in 3 dimensional
 
 In order to check whether 2 RSS' intersect, one of the RSS' overlap method is called with the other RSS as argument.
 
-\fixme{write this part when it has been decided which method you will use to create the RSS}
+\Sfixme{write this part when it has been decided which method you will use to create the RSS}
 In this project I have tried 2 different methods for constructing the RSS from a set of points:
 
 The first method I tried took the created an axis-oriented rectangle in 2d, which was then projected into 3d. This implementation is clearly inferior to one that uses a non axis-oriented rectangle, since the latter solution would create a more compact bounding volumes - which presumably would reduce the number of intersection tests. Due to time constraints I have not tried to implement this solution, though I belive it to be worth investigating. 
@@ -47,3 +47,5 @@ The first method I tried took the created an axis-oriented rectangle in 2d, whic
 \subsection{Axis seperation test}
 \label{implementation_axis_sep}
 The description of the axis-separation test in \cite{237244} notes that ``The placement of the axis is immaterial, so we assume it passes through the center of A'' (\cite{237244}, section 5, page 9) - which essential rotates both A and B so that A aligns with the axis'. Doing this would make it much easier to do both loop unrolling \Sfixme{really?} and use some the optimisations found in the paper. Due to time constraints, I have not done in my implementation.
+
+\Sfixme{Make implementation conclusion subsection}
