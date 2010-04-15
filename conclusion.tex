@@ -3,18 +3,14 @@
 \section{Conclusion}
 \label{conclusion}
 \subsection{Introduction}
-In this section I will attempt 
-
-Finally I will discuss possible future projects.
+In this section I will sum up the project and discuss possible future projects. 
 
 \subsection{Efficiency of solution}
-While it at the current state is hard to truly gauge the quality of the implementation, it is clear that compared to other, already implemented Bounding Volumes in ProGAL, such as Capsules, that the the detection speed of overlapping RSS' leaves much to be desired.
+It is clear that compared to other, already implemented Bounding Volumes in ProGAL, such as LSS' (Capsule3d), that the the detection speed of overlapping RSS' leaves much to be desired, as does its volume.
 
 \subsection{Future work}
-In order to properly gauge the efficiency of my implementation, I feel that it should be implemented with Bounding Volume Hierarchies, and thoroughly tested against Oriented Bounding Boxes. I am however of the opinion that the current implementation of the overlap code for RSS', leaves room for optimizations, which also should be looked into. 
+In order to properly gauge the efficiency of my implementation, I feel that it should be implemented in the Bounding Volume Hierarchi, and thoroughly tested against Oriented Bounding Boxes. I furthermore think that both the overlap code, and the tightness of the volume should be optimized, if the RSS is ever to be considered as a data-structure for protein folding. 
 
-Another optimization would be to experiment on how best to reduce the volume of the RSS, giving it a tighter fit around the point-set it was created from.
+Another Swept Sphere variations worth looking into is Triangular Swept Spheres (TSS), where instead of a point, line or rectangle (as is the case in PSS, LSS, and RSS respectively), the midpoint of the sphere swept through a triangle. 
 
-Another Swept Sphere variation it might be worth looking into is Triangular Swept Spheres (TSS), where instead of a rectangle or a line (as is the case in RSS and LSS) a triangle is used as the surface for the sphere to swept through. 
-
-Another avenue of research could be to check whether the OBB data structure could be altered and inspired from the RSS (such as giving it a radius that only works in the direction of the normal vector of the plane) and try to implement different detection methods (such as implementing a OBB version of the minimum distance algorithm implemented for the RSS - where only the edges that are in the direction of the normal edges are checked), to see if it could make the overlap detection run in less time.
+Another project could be whether a hybrid OBB/RSS data-structure would be interesting (such as giving the OBB a radius that only works in the direction of the normal vector of the plane) and try to implement different overlay detection methods (such as implementing a OBB version of the minimum distance algorithm implemented for the RSS - where only the edges that are in the direction of the normal edges are checked).

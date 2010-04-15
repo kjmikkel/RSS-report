@@ -3,16 +3,16 @@
 \section{Results}
 \label{results}
 \subsection{Introduction}
-In this section I will discuss the results of the project.
+In this section I will discuss the results of the project. I will start by discussing the speed of the implemented features, and then talk about volume.
 
 \subsection{Implemented features}
 I have successfully implemented the RSS data-structure as well as its dependent class, a rectangle in 3D. 
 
-Furthermore I have implemented
+Furthermore I have implemented all the required methods for the 2 classes.
 
 \subsection{Comparisons}
 
-In order to estimate whether my implementation was successful or not, I have tried to compare it with several other implementations - namely LSS' and OBBs. The parameters for comparison have been their volume and the runtime required to check whether 2 BV are separate or not.
+In order to argue whether the quality of my implementation, I have tried to compare it with several other implementations - namely LSS' and OBBs. The parameters for comparison have been the volume of the data-structure, and the wall clock time required to check whether 2 BV overlaps or not.
 
 \subsubsection{Generation of tests results}
 All of the test results have been made by generating 2 arrays of
@@ -20,7 +20,7 @@ All of the test results have been made by generating 2 arrays of
 maintain 2 arrays for each type of BV I create, with the intention of
 checking each element from the first array against all elements in the
 second array. This is done in order to ensure
-that in practice the BV is never checked against itself, and also so
+that in practice a BV is never checked against itself, and also so
 that I am quickly able to create large number of tests, without having
 to use too much system memory. \\ 
 
@@ -32,17 +32,13 @@ new BV of each type. \\
 I perform 2 test: 
 \begin{description}
 \item[Overlap:] I test the wall clock time required to perform the overlap test,
-  for all 1.000.000 pointsets, for all 3 types of BV. The creation of the BV's are as described above.  
-\item[Volume:] I find the average volume of the individual BV's that cover a single point set, as well as the average of all possible BV's that can be created from 2 BV's. 
+  for all 1.000.000 possible BV combinations, for all 3 types of BV. The creation of the BV's are as described above.  
+\item[Volume:] I find the average volume of the individual BV's that cover a single point set, as well as the average of all possible BV combinations that can be created from combining 2 BV's.
 \end{description}
 
 All of these tests have been executed on a [my own computer specs].
 
 \subsubsection{Overlap detection}
-
-\begin{figure}
-\caption{\label{overlap-OBB_RSS_RSS-No-Min_LSS}Comparison of the time spent for the different algorithms. The RSS-No-Min line shows the time required for the RSS overlap algorithm that only runs the Axis-separation test, without the minimum distance test first}
-\end{figure}
 
 \begin{table}
 \input{tableData/allTime.tex}
@@ -52,10 +48,10 @@ All of these tests have been executed on a [my own computer specs].
 with the axis separation test, and no minimum distance check first}
 \end{table}
 
-As it is clear from both figure \ref{overlap-OBB_RSS_RSS-No-Min_LSS} and table \ref{overlap-table}, the current RSS overlap algorithm is slower than the one for both the OBB, and the LSS. 
+As it is clear from table \ref{overlap-table}, the current RSS overlap algorithm is slower than the one for both the OBB, and the LSS. 
 
 This can partly be explained by the fact that, due to time constraints,
-the overlap method for the RSS has not been optimized. However, considering that I perform 1000000 tests, the difference between RSS and the OBB can most likely be greatly reduced, if not eliminated all-together.
+the overlap method for the RSS has not been optimized. But also the volumes of the RSS', which I will go into detail about below.
 
 \subsubsection{Volume}
 \label{volume-label}
@@ -68,7 +64,7 @@ the overlap method for the RSS has not been optimized. However, considering that
   different combinations of BV's.}
 \end{table}
 
-From table \ref{volume-table} it is clear that the current implementation of the RSS is inferior to both OBB's and LSS'.
+From table \ref{volume-table} it is clear that the current implementation of the RSS is inferior to both OBB's and LSS'. 
 
 \subsubsection{Problems with the current tests}
 \label{test_problems}
@@ -79,4 +75,4 @@ It is worth mentioning, that as implemented, OBB's and RSS' both uses the Axis s
 Furthermore, as described in \ref{implementation_axis_sep}, given 2 RSS' A and B, I have not made the axis go through A (which in practice would mean that I would have had to find the transformation of A so that it became axis-parallel, and then transforming both A and B so with the same transformation) \Sfixme{Better explanation or remove entirely?}. Since all OBB's in ProGAL are axis oriented, this is trivially true for its axis-separation test, with all the possible optimizations that enables.
 
 \subsection{Conclusion}
-I have in this section shown that the current implementation of the RSS performs worse than both the OBB and the LSS on both the metrics of volume and run time (in the form of wall clock time seconds).\Sfixme{See if the conclusion can be made better}
+I have in this section shown that the current implementation of the RSS performs worse than both the OBB and the LSS on both the metrics of volume and wall clock time when performing overlap detection. If the RS data-structure is to be used in practice, these limitations must be overcome.
