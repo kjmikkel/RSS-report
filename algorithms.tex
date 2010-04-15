@@ -23,12 +23,6 @@ The algorithm is split into 2 phases: The minimum distance test and the axis sep
 \caption{\label{normal-inter}An example of 2 RSS overlapping}
 \end{figure}
 
-\begin{figure}
-\centering
-\includegraphics[width=0.5\textwidth]{figures/sepAxis}
-\caption{\label{sep-Axis}Where one of the RSS lies above and ``inside'' the other}
-\end{figure}
-
 In the following let minDist(rec(A), rec(B)) be the minimum distance between the rectangles of RSS A and B, radius(A) is the radius of A.\\
 
 One approach to check if 2 RSS', A and B, overlap, is to check the minimum distance between their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ Radius(A) + radius(B) - see figure \ref{normal-inter} for an illustration, then A and B must overlaps. This is the approach found in \cite{Larsen99fastproximity}.
@@ -71,7 +65,7 @@ It is important to understand the purpose of the methods, and their exiting cond
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{figures/vorCheap}
+\includegraphics[width=\textwidth]{figures/sepAxis}
 \caption{\label{parallel} An illustration of where one RSS lies above, and inside the other RSS.}
 \end{figure}
 
@@ -163,14 +157,10 @@ From \ref{rss} it is clear that a normal RSS will essentially create a Oriented 
 
 The only real property that the RSS has that the OBB does not, is the radius. This is what we are trying to exploit in the minimum distance check. As detailed in the Results section, this exploit does not lead to greatly improved run time, and it is therefore likely that a RSS with a larger volume than an OBB will never be more efficient. \Sfixme{These 2 last subsections are suspect}
 
+\hide{
 \subsection{Optimized volume} 
-\begin{figure}
-\centering
-\includegraphics[width=0.5\textwidth]{figures/normalInter}
-\caption{\label{optimized-volume}An example of an optimized volume, where the [Rim has been taken into use]}
-\end{figure}
 
 Since we in the Minimal distance check, makes sure that the distance between the 2 rectangles is less than the combined radius of the 2 RSS' i.e. if any part of the 2 RSS' intersect - also the part that does not lie above or below the RSS' rectangle. From this it is apparent that points could be placed outside the rectangle, but inside the Outer RSS, then the volume of the RSS could, at least in certain cases, become smaller. Finding this optimized volume would most likely take more time than algorithm \ref{create-algo}, and it unknown how much faster the overlap function would become, so it is likely worth a research project of itself. \Sfixme{Should I really mention this - is there a better way writing this section - most likely there is}
-
+}
 \subsection{Conclusion}
 I have in this section presented the main problem that my algorithms are trying to solve - to find out whether 2 RSS' overlap, and how to create a new RSS that will contain all the points of 2 other RSS'. I have presented both algorithms on both high- and low-level, and have at the end discussed how to minimize the volume by using the rim optimally, discussed how the RSS is unlikely to become more efficient than the OBB.
