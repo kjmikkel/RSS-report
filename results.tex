@@ -64,13 +64,19 @@ the overlap method for the RSS has not been optimized. But also the volumes of t
   different combinations of BV's.}
 \end{table}
 
-From table \ref{volume-table} it is clear that the current implementation of the RSS is inferior to both OBB's and LSS'. 
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{figures/compareRSSOBB}
+\caption{\label{compare-example}A RSS besides an OBB. The have been based on the same point-set, only transformed in the x dimension. It is clear that the RSS figure is larger than OBB}
+\end{figure}
+
+From table \ref{volume-table} it is clear that the current implementation of the RSS is worse than OBB's when it comes to a single point-set (this is also clear at figure \ref{compare-example}), but when it comes to combine 2 BV's, RSS outperforms OBB's, though not LSS'. 
 
 \subsubsection{Problems with the current tests}
 \label{test_problems}
 All tests have been done on sets of points that have been generated randomly. It is therefore more likely that 2 BV's generated from the point sets are disjoint, than what would be the case in reality. This of course means that the results listed here can mainly be used to gauge how well the algorithms handle the cases where most of the point sets are disjoint.
 
-It is worth mentioning, that as implemented, OBB's and RSS' both uses the Axis separation test, but as mentioned in \ref{intersection}, RSS first checks the minimum distance between the two RSS' is less than their combined radii. So everything else being equal, it is clear that the RSS overlap check would have to do more work than the worst case overlap test for OBB's. Since the current version of the RSS also has a greater average volume than the OBB (see \ref{volume-label}), RSS' should report more overlaps than OBB's, which in practice should give it a worse run time.
+It is worth mentioning, that as implemented, OBB's and RSS' both uses the Axis separation test, but as mentioned in \ref{overlap}, RSS first checks the minimum distance between the two RSS' is less than their combined radii. So everything else being equal, it is clear that the RSS overlap check would have to do more work than the worst case overlap test for OBB's. Since the current version of the RSS also has a greater average volume than the OBB (see \ref{volume-label}), RSS' should report more overlaps than OBB's, which in practice should give it a worse run time.
  
 Furthermore, as described in \ref{implementation_axis_sep}, given 2 RSS' A and B, I have not made the axis go through A (which in practice would mean that I would have had to find the transformation of A so that it became axis-parallel, and then transforming both A and B so with the same transformation) \Sfixme{Better explanation or remove entirely?}. Since all OBB's in ProGAL are axis oriented, this is trivially true for its axis-separation test, with all the possible optimizations that enables.
 
