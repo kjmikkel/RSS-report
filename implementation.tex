@@ -7,10 +7,10 @@
 In this section I will give an overview of the implementation details of this projects. This will include choice of programming language, libraries that I have found useful, as well as an overview of the classes and files that I have added to the framework.
 
 \subsection{Choice of programming language}
-Since the goal of this project is to implement the Rectangular Swept Sphere into the ProGAL Java framework there has never been any doubt that as much as possible of this project should be implemented in Java - only using other languages if there was already existing, efficient, code, that implemented critical features.
+Since the goal of this project is to implement the Rectangular Swept Sphere into the ProGAL Java framework, there has never been any doubt that as much as possible of this project should be implemented in Java - only using other languages if there was already existing, efficient, code that implemented critical features.
 
 \subsection{Use of Framework}
-Since this project is about implementing RSS in the ProGAL framework, I will make heavy use of the features already existing in the framework. This is done both to save time, and to avoid code duplication, but also because I assume that the implemented features would be more efficient than what I would be able to implement.
+Since this project is about implementing RSS in the ProGAL framework, I will make heavy use of the features already existing in the framework. This is done both to save time, and to avoid code duplication, but also on the assumption that already implemented features would be more efficient than what I would be able to implement.
 
 \subsection{Classes implemented}
 In this project I have implemented 2 classes:
@@ -24,26 +24,24 @@ which primarily uses these custom classes form ProGAL:
 \begin{itemize}
 \item[Point3d:] A point in 3D
 \item[Vector3d:] A vector in 3D
-\item[Volume3d:] An interface that requires the implementation of an \texttt{overlaps} and \texttt{volume}, which respectively tests whether 2 Voule3d overlaps, and returns the volume of the Volume3d object as a double.
+\item[Volume3d:] An interface that requires the implementation of an \texttt{overlaps} and \texttt{volume}, which respectively tests whether 2 Volume3d overlaps, and returns the volume of the Volume3d object as a double.
 \end{itemize}
 
 \subsubsection{Rectangle3d}
 \label{rectangle3d}
-The Rectangle3d class is used to represent a rectangle in 3 dimensional space. To represent the rectangle itself I use one center point (Point3d), 2 unit vectors (Vector3d) which describe the plane that the rectangle lies in, and 2 doubles that contains the length of the vectors. In order to comply with the other structures, the rectangle3d class implements the interface Volume3d.
+The Rectangle3d class is used to represent a rectangle in 3 dimensional space. To represent the rectangle itself I use one center point (Point3d), 2 unit vectors (Vector3d) which describe the plane that the rectangle lies in, and 2 doubles that contains the length of the vectors. To make it easier to implement in the Bounding Volume Hirachy, rectangle3d class implements the interface Volume3d.
 
-It is also in this class that I have implemented both the Minimum distance algorithm and Axis-separation algorithm. My justification for implementing it in rectangle instead of the RSS3d class is that both algorithms works on rectangles/rectangular boxes, and not only on Rectangular Swept Spheres or any other data-structures.
+It is also in this class that I have implemented both the Minimum distance algorithm and Axis-separation algorithm. My justification for implementing it in rectangle instead of the RSS3d class is that both algorithms works on rectangles/rectangular boxes, and not only on Rectangular Swept Spheres.
 
 \subsubsection{RSS3d}
 \label{RSS3d}
 The RSS3d class is used to represent a Rectangular Swept Sphere in 3 dimensional space. The RSS is represented by a radius which is given as a double, and the rectangle is a Rectangle3d, as descried above. In order to comply with the other structures, the rectangle3d class implements the interface Volume3d.
 
-In order to check whether 2 RSS' intersect, one of the RSS' overlap method is called with the other RSS as argument.
-
-\fixme{write this part when it has been decided which method you will use to create the RSS}
-In this project I have tried 2 different methods for constructing the RSS from a set of points:
-
-The first method I tried took the created an axis-oriented rectangle in 2d, which was then projected into 3d. This implementation is clearly inferior to one that uses a non axis-oriented rectangle, since the latter solution would create a more compact bounding volumes - which presumably would reduce the number of intersection tests. Due to time constraints I have not tried to implement this solution, though I belive it to be worth investigating. 
+In order to check whether 2 RSS' overlap, one of the RSS' overlap method is called with the other RSS as argument. 
 
 \subsection{Axis seperation test}
 \label{implementation_axis_sep}
-The description of the axis-separation test in \cite{237244} notes that ``The placement of the axis is immaterial, so we assume it passes through the center of A'' (\cite{237244}, section 5, page 9) - which essential rotates both A and B so that A aligns with the axis'. Doing this would make it much easier to do both loop unrolling \Sfixme{really?} and use some the optimisations found in the paper. Due to time constraints, I have not done in my implementation.
+The description of the axis-separation test in \cite{237244} notes that ``The placement of the axis is immaterial, so we assume it passes through the center of A'' (\cite{237244}, section 5, page 9) - which essential rotates both A and B so that A aligns with the axis'. Doing this would make it much easier to do both loop unrolling and use some the optimisations found in the paper. Due to time constraints, I have not done in my implementation.
+
+\subsection{Conclusion}
+\Sfixme{Make implementation conclusion subsection}
