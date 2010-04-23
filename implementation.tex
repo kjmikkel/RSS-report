@@ -7,10 +7,10 @@
 In this section I will give an overview of the implementation details of this projects. This will include choice of programming language, libraries that I have found useful, as well as an overview of the classes and files that I have added to the framework.
 
 \subsection{Choice of programming language}
-Since the goal of this project is to implement the Rectangular Swept Sphere into the ProGAL Java framework, there has never been any doubt that as much as possible of this project should be implemented in Java - only using other languages if there was already existing, efficient, code that implemented critical features.
+Since the goal of this project is to implement the Rectangular Swept Sphere into the ProGAL Java framework, there has never been any doubt that as much as possible of this project should be implemented in Java - only using other languages if there was already existing, efficient, code that implemented critical features. This has not been the case.
 
 \subsection{Use of Framework}
-Since this project is about implementing RSS in the ProGAL framework, I will make heavy use of the features already existing in the framework. This is done both to save time, and to avoid code duplication, but also on the assumption that already implemented features would be more efficient than what I would be able to implement.
+Since this project is about implementing RSS in the ProGAL framework, I will make heavy use of the features already existing in the framework. This is done both to save time, and to avoid code duplication, but also because I already implemented features are more efficient than what I myself would be able to implement.
 
 \subsection{Classes implemented}
 In this project I have implemented 2 classes:
@@ -29,19 +29,16 @@ which primarily uses these custom classes form ProGAL:
 
 \subsubsection{Rectangle3d}
 \label{rectangle3d}
-The Rectangle3d class is used to represent a rectangle in 3 dimensional space. To represent the rectangle itself I use one center point (Point3d), 2 unit vectors (Vector3d) which describe the plane that the rectangle lies in, and 2 doubles that contains the length of the vectors. To make it easier to implement in the Bounding Volume Hirachy, rectangle3d class implements the interface Volume3d.
+The Rectangle3d class is used to represent a rectangle in 3 dimensional space. The rectangle itself is represented by a center point (Point3d), 2 unit vectors (Vector3d) which describe the plane that the rectangle lies in, and 2 doubles that contains the length of the vectors. To make it easier to implement in the Bounding Volume Hierarchy, rectangle3d class implements the interface Volume3d.
 
-It is also in this class that I have implemented both the Minimum distance algorithm and Axis-separation algorithm. My justification for implementing it in rectangle instead of the RSS3d class is that both algorithms works on rectangles/rectangular boxes, and not only on Rectangular Swept Spheres.
+It is in this class that I have implemented both the Minimum distance and Axis-separation algorithm. My justification for implementing it in in this class, instead of the RSS3d class is that both algorithms works on rectangles/rectangular boxes, and are therefore not particular to the Rectangular Swept Spheres.
 
 \subsubsection{RSS3d}
 \label{RSS3d}
-The RSS3d class is used to represent a Rectangular Swept Sphere in 3 dimensional space. The RSS is represented by a radius which is given as a double, and the rectangle is a Rectangle3d, as descried above. In order to comply with the other structures, the rectangle3d class implements the interface Volume3d.
+The RSS3d class is used to represent a Rectangular Swept Sphere in 3 dimensional space. The RSS is represented by a radius which is given as a double, and the rectangle is a Rectangle3d, as descried above, and a Box3d that contains the entire RSS. In order to comply with the other structures, the rectangle3d class implements the interface Volume3d.
 
 In order to check whether 2 RSS' overlap, one of the RSS' overlap method is called with the other RSS as argument. 
 
-\subsection{Axis seperation test}
+\subsection{Axis separation test}
 \label{implementation_axis_sep}
-The description of the axis-separation test in \cite{237244} notes that ``The placement of the axis is immaterial, so we assume it passes through the center of A'' (\cite{237244}, section 5, page 9) - which essential rotates both A and B so that A aligns with the axis'. Doing this would make it much easier to do both loop unrolling and use some the optimisations found in the paper. Due to time constraints, I have not done in my implementation.
-
-\subsection{Conclusion}
-\Sfixme{Make implementation conclusion subsection}
+Since I have to generate an OBB (in practice an instance of the class Box3d) for the RSS, I have opted to use Box3d's built in Axis separation test, instead of writing my own.

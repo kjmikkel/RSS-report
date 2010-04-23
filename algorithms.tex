@@ -8,12 +8,12 @@ In this section I will go into high-level detail about the principal problems th
 
 \subsection{Overlap}
 \label{overlap}
-In order to be able to use the Rectangular Swept Sphere (RSS) in ProGAL framework, it is paramount that I must find a fast way to detect when 2 RSS' are overlapping, so that it can be decided whether a fold of the protein should go ahead or not. In the following I will describe the methods I have used to check whether or not two RSS' are overlapping.
+In order to be able to use the Rectangular Swept Sphere (RSS) in ProGAL framework, I must implement a method to detect whether 2 RSS' are overlapping, so that it can be decided whether a confirmation of the protein should go ahead or not. In the following I will describe the methods I have used to check whether or not two RSS' are overlapping.
 
 \subsubsection{Approach}
-In the algorithm I have chosen to implement, I will prefer to report a possible overlap where there might not be one, instead of failing to report a possible overlap. While this may give a performance penalty, it is critically important that illegal folding of the proteins are not accepted. 
+In the algorithm I have chosen to implement, I will prefer to report a possible overlap where there might not be one, instead of failing to report a possible overlap. In theory this can happen with the current implementation of RSS overlap algorithm, but in practice it is not very likely.
 
-The algorithm is split into 2 phases: The minimum distance test and the axis separation test. The first test finds the minimum distance between the rectangles of the RSS', which quickly can report an intersection, but doesn't always work, the second test finds out whether there is an axis separating the 2 RSS' (in which case they cannot intersect), which takes longer time than the first, but which always gives a correct answer. 
+The algorithm is split into 2 phases: The minimum distance test and the axis-separation test. The first test finds the minimum distance between the rectangles of the RSS'. If the found distance is less than the combined radius, then we can report an intersection. However, since the current implementation of the Minimum distance algorithm only works when the 2 closest  points both lie on an edge, there is a need for the axis-separation test, which checks whether there exists an axis separating the 2 RSS' (in which case they cannot intersect). The axis-separation test takes longer time than the Minimum distance check, it will always correctly identify whether the 2 RSS intersect or not.
 
 \subsubsection{Minimum distance}
 
@@ -25,81 +25,119 @@ The algorithm is split into 2 phases: The minimum distance test and the axis sep
 
 In the following let minDist(rec(A), rec(B)) be the minimum distance between the rectangles of RSS A and B, radius(A) is the radius of A.\\
 
-One approach to check if 2 RSS', A and B, overlap, is to check the minimum distance between their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ Radius(A) + radius(B) - see figure \ref{normal-inter} for an illustration, then A and B must overlaps. This is the approach found in \cite{Larsen99fastproximity}.
+One approach to check if 2 RSS', A and B, overlap, is to check the minimum distance between their rectangles. It is clear that if minDist(rec(A), rec(B)) $<=$ Radius(A) + radius(B) - see figure \ref{normal-inter} for an illustration, then A and B must overlaps. This is the approach found in \cite{Larsen99fastproximity} and \cite{larsen00fast}, which I have tried implementing in this project.
 
-The problem then becomes one of finding the 2 closest points between rec(A) and rec(B), and calculating the distance.
-Given that the rectangles do not overlap, then the possible configurations of the closest points are, according to section 4.2.1 of \cite{Larsen99fastproximity}:
+The problem then becomes one of finding the 2 closest points between rec(A) and rec(B), and calculating their distance.
+
+According to section 4.2.1 of \cite{Larsen99fastproximity} the possible configurations of the closest points are, 
 \begin{enumerate}
-\item Both of the points lie on an edge. This is the situation illustrated in figure \ref{normal-inter}.
-\item One of the points lie in the interior of one of the rectangles (where the other point lies is irrelevant). 
+\item Both of the points lie on an edge. This is the situation illustrated in figure \ref{normal-inter}. This is the only case where \cite{Larsen99fastproximity} uses the minimum distance algorithm.
+\item One of the points lie in the interior of one of the rectangles (where the other point lies is irrelevant). This is the case is illustrated in figure \ref{parallel}. To handle this case, both I and \cite{Larsen99fastproximity} uses the Axis-separation algorithm. 
 \end{enumerate}
 
-\subsection{The points lie on 2 edges}
+\subsection{Minimum distance}
 \label{minimumDistance}
-Since we are only interested in the smallest minimum distance between pairs of edges, it is clear that we only need to calculate the minimum distance between the edges that are closest to each other, all other edges will by definition be further away. The approach in my implementation is the one described in \cite{larsen00fast} and \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams\footnote{For a formal description of Voronoi diagrams see \cite{compgeom:2008} Chapter 7} in order to quickly decide which pair of edges might be closest together. For a more detailed justification of this, see \cite{larsen00fast} section 4.2 and \cite{Larsen99fastproximity} section 4.3.1 - particularly Lemma 1. 
+I will only deal with minimum distance in the case where the 2 closest points both lies on the edges of the RSS'.
+
+It is clear that if the 2 closest points lie on the edges, then the naively approach would be to find the smallest distance from all edges from RSS A to all edges on RSS B, and then returning the smallest of these. This would however require 16 distance calculations, some of which clearly unnecessary - for instance doing any distance calculations for edge e in figure \ref{vor-cheap}, since it is the edge furthest away from the other RSS. 
+
+Thus we are only in interested in doing distance calculations between the edges that are closest together. The approach in my implementation is the one described in \cite{larsen00fast} and \cite{Larsen99fastproximity}, where the authors exploit the properties of Voronoi diagrams. Given a set G of geometric structures (points, line-segments, etc.) in an n-dimensional space, a Voronoi diagram can be used to find the set of points are closets to any member of G. A formal definition of Voronoi diagrams can be found in \cite{compgeom:2008} Chapter 7. In this case the Voronoi diagrams should be used on line-segments from one of the RSS', and the resulting diagram would allow us to identify which pair of edges are worth checking.
+
+The interested reader might want to read \cite{larsen00fast} section 4.2 and \cite{Larsen99fastproximity} section 4.3.1 (especially Lemma 1) - for a more in-depth treatment of Voronoi diagrams in relation to this.
 
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{figures/vorCheap}
-\caption{\label{vor-cheap}An illustration of the cheap Voronoi diagram method (2d for simplification). The letters indicate which edges are closest to that area. Areas which multiple letters will be checked by multiple edges. For instance, the edges of RSS2 that either lie completely, or partially in area 3 will be checked by both RSS1's edge a and d. The edges of RSS2 that lies entirely within area 5 will only be checked by RSS1's edge d.}
+\caption{\label{vor-cheap}An illustration of the cheap Voronoi diagram method (2 dimensions for simplicity). The letters indicate with edges are closest to that area. Areas which multiple letters will be checked by multiple edges. For instance, the edges of RSS2 that either lie completely, or partially in area 3 will be checked by both RSS1's edge a and d. The edges of RSS2 that lies entirely within area 5 will only be checked by RSS1's edge d.}
 \end{figure}
 
-Fortunately I do not need to calculate the Voronoi diagram in order to detect which Voronoi cell an edge/line-segments lies in. Let E be the edge whose closest edges we wish to find, \textbf{n} be vector perpendicular to E, then the face defined by -\textbf{n} and a point on E will define the half-plane D. All edges/line-segments that lies, wholly or partly, within D are candidates for the closest edge, as described in \cite{larsen00fast}. Using this approach, instead of explicitly calculating the Voronoi diagram, has the disadvantage that an edge might lie in multiple half-planes. However, even in the worst case this would mean that 8 checks would have had to be made, which still is better than doing 16 checks. See figure \ref{vor-cheap} for an example of this.
+Fortunately I do not need to calculate the Voronoi diagram in order to detect which Voronoi cell an edge/line-segments lies in. Let E be the edge whose closest edges we wish to find, \textbf{n} be an arbitrary vector perpendicular to E, then the face defined by -\textbf{n} and a point on E will define the half-plane D. All edges/line-segments that lies, wholly or partly, within D are candidates for the closest edge, as described in \cite{larsen00fast}. Using this approach, instead of explicitly calculating the Voronoi diagram, has the disadvantage that an edge might lie in multiple half-planes. However, even in the worst case this would mean that we would have to perform 8 Minimum distance calculations, which still is an improvement to doing 16 Minimum distance calculations. See figure \ref{vor-cheap} for an illustration of approach used both in this project and \cite{larsen00fast} and \cite{Larsen99fastproximity}.
 
-The problem then becomes one of finding the minimum distance between 2 line-segments in 3 dimensions, and then returning the smallest of these values. If no possible candidates are found, then infinity is returned.
+Now that we have reduced the number of Minimum distance calculations, the problem becomes one of finding the minimum distance between 2 line-segments in 3 dimensions, and then returning the smallest of these values. If no possible candidates are found, then infinity is returned.
 
-If the RSS' overlap, or if one of the points closest to one of the rectangles lies in the interior, or the minimum distance between the 2 RSS is greater than the maximum radius, then it becomes necessary to run the separating axis test, which is discuss below.
+The algorithm I uses to find the minimum distance between the line-segments is as follows:\\
+\begin{algorithm}[H]
+  \caption{Mindistane line-segments}
+  \label{mindist-lineseg}
+  \SetKwData{return}{return}
+  \SetKwInOut{Input}{input} \SetKwInOut{Output}{output}
+  \dontprintsemicolon
+  \Input{lineSeg1 and lineSeg2, the 2 line-segments we want to compare. p1 and p2, two points on the line-segments}
+  \Output{The distance between the line-segments}
+   pointVector $\gets$ makeVektor(p1, p2) \;
+   a $\gets$ dotProduct(lineSeg1, lineSeg1) \;
+   b $\gets$ dotProduct(lineSeg1, lineSeg2) \;
+   c $\gets$ dotProduct(lineSeg2, lineSeg2) \;
+   d $\gets$ dotProduct(lineSeg1, pointVector) \;
+   e $\gets$ dotProduct(lineSeg2, pointVector) \;
+   dominator $\gets$ a * c + b * b \;
+   \eIf{dominator == 0.0}{
+     line1Mul $\gets$ (b * e - c * d) / dominator \;
+     line2Mul $\gets$ (a * e - b * d) / dominator \;
+     line1Clone $\gets$ mult(lineSeg1, edge1Mul); \;
+     line2Clone $\gets$ mult(lineSeg2, edge2Mul); \;
+     line1Clone $\gets$ add(line1Clone, pointVector) \;
+     line1Clone $\gets$ subtract(line1Clone, line2Clone) \;
+     \return length(line1Clone) \;
+   }{
+     \return length(pointVector) \;
+   }  
+\end{algorithm}
 
-\subsection{Separating axis test}
+\subsection{Axis separation test}
 \label{sepAxis}
 
-In order to take care of the cases where 2 rectangles either overlap or where the closest point lies inside the interior of the rectangles, I have to do an Axis-separation check, as described in \cite{237244}. The gist of the Axis-separation test is ``that two disjoint convex polytopes in 3-space can always be separated by a plane which is parallel to a face of either polytope, or parallel to an edge from each polytope'' (\cite{237244}, section 5, page. 8).
+In order to take care of the cases where 2 rectangles either overlap or where the closest point lies inside the interior of the rectangles, I have to do an Axis-separation check. The gist of the Axis-separation test is ``that two disjoint convex polytopes in 3-space can always be separated by a plane which is parallel to a face of either polytope, or parallel to an edge from each polytope'' (\cite{237244}, section 5, page. 8).
 
-The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's), and takes care of rectangle to rectangle axis test as a degenerate, and faster, case (\cite{237244}, section 5).
+The Axis-separation test described in \cite{237244} was designed to work on Oriented Bounding Boxes (OBB's). For the RSS this means that an OBB containing the RSS must be constructed, and for efficiency reasons, this should be done when the RSS is initially constructed (see also section \ref{multiple-points}). 
+
+The Axis separation test works by generating a unit plane, and by projecting the length of the OBB onto this plane. If, at least one of the projections are disjoint, then the 2 OBB's (and hence the 2 RSS'), must be disjoint.
+
+In all 15 planes have to be tested for axis separation. The first 6 planes comes from the 3 faces for each of the 2 OBB; and the last 9 planes are the 9 pairwise combination of edges from the 2 OBBs. 
 
 \subsubsection{Order of Minimum distance and Axis separating test}
 \label{minAxisOrder}
-An important question is whatever the minimum distance test should be run first, followed by axis-seperation is optimal, or if it might be better just to run the axis separation test.
+An important question is whether running the minimum distance test, followed by the axis-separation is optimal, or if it might be better just to run the axis separation test.
 
-It is important to understand the purpose of the methods, and their exiting condition, the cases that causes them to exit their test at the earliest juncture, and the cases that makes makes them do the most work:
+It is important to understand the purpose of the methods, and the cases that terminates the algorithms, which cases makes them terminate earliest, and well as the cases that makes them do the most work.
 
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{figures/sepAxis}
-\caption{\label{parallel} An illustration of where one RSS lies above, and inside the other RSS.}
+\caption{\label{parallel} A RSS lies above, and inside another RSS.}
 \end{figure}
 
 \subsubsection{Minimum distance}
 \begin{description}
-\item[Purpose:] The minimum distance algorithm finds the minimum distance between edges.
-\item[Exiting condition:]The exiting condition of the algorithm is when it has either checked all edges for minimum distance, or when it finds a minimum distance that is smaller than the combined radius of the RSS'. If the algorithm returns with a positive, then we know that the 2 RSS' intersect, but if it returns with a negative, then we do not know whether the 2 RSS' overlap or not. The algorithm favours the cases where the 2 RSS' might overlap.
-\item[Best case:] The first edge is closer than the combined radius of both RSS' - the test stops immediately.
-\item[Worst case:] All the edges are tested, but the found distance is greater than the combined radius. Such a case occurs when the 2 RSS' do not overlap.
+\item[Purpose:] The minimum distance algorithm tries to find the minimum distance between 2 RSS'.
+\item[Terminating condition:]The terminating condition of the minimum-distance algorithm is when it has either checked all edges for minimum distance, or when it finds a minimum distance that is smaller than the combined radius of the RSS'. If the algorithm returns true, then we know that the 2 RSS' intersect, but if it returns false, then we do not know whether the 2 RSS' overlap or not.
+\item[Best case:] The first edge is closer than the combined radius of both RSS' - the test returns true and terminates.
+\item[Worst case:] All the edges are tested, but the found distance is greater than the combined radius. Nothing concrete can be gained from this case.
 \item[Does not handle:] This algorithm cannot handle cases where one of the RSS lies ``above'' or ``below'' the other (in the plane generated by the second's RSS' rectangle). See figure \ref{parallel} for an illustration of the case.
 \end{description}
 
 \subsubsection{Axis-separation test}
 \begin{description}
 \item[Purpose:] The axis separation algorithm tries to find an axis that separates the 2 RSS'. 
-\item[Exiting condition:] The axis-separation test terminates either when it finds in which the 2 rectangles are disjoint, or after having run all axis-tests. For the algorithm to be valid, the created RSS should therefore contain all the points - while its quality should be measured in how tight the fit is.
+\item[Terminating condition:] The axis-separation test terminates either when it finds an axis which separates the 2 OBBs' that contain the RSS, or after having run all 15 axis-tests.
 \item[Best case:] The first axis test shows that the 2 RSS' are disjoint, and the algorithm terminates. 
-\item[Worst case:] The 2 RSS' are not disjoint, and so all 15 axis-tests (See \ref{sepAxis} for more information) have to be made.
+\item[Worst case:] The 2 RSS' are not disjoint, and so all 15 axis-tests have to be made.
 \item[Does not handle:] Axis-separation test handles all cases.
 \end{description}
 
-It is thus clear that the worst case where RSS A overlaps with RSS B in B's interior - since this case is not handled by the minimum distance test, and the Axis-separation test will have to do all 15 tests. From this it is clear that the cases we belive to be most common case should decide the optimal order. 
+It is thus clear that the worst case where RSS A overlaps with RSS B in B's interior - since this case is not handled by the minimum distance test, and the Axis-separation test will have to do all 15 tests. 
 
-If we think that it is likely that a RSS will lie in the interior or another (either overlapping the other, or lying above or below the RSS' rectangle) or that RSS' will only intersect in rare cases, then it will be a better choice to only run the Axis-separation test. If, on the other hand, we believe RSS' are unlikely to lie above/below each others rectangle, and will often intersect, then the minimum distance algorithm, followed by the Axis-separation test will be better.
+If we think that it is likely that a RSS will lie in the interior or another (either overlapping, or lying above or below the RSS' rectangle) or that RSS' will only intersect in rare cases, then it will be a better only run the Axis-separation test. If, on the other hand, we believe RSS' are unlikely to lie above/below each others rectangle, and will often intersect, then the minimum distance algorithm, followed by the Axis-separation test will be a better choice.
 
 Since in the context of folding proteins are interested in being told that a fold is illegal as soon as possible (so that the next fold can be tested\footnote{In a BVH, and thus in practice, we furthermore have the case that a detected overlap will lead to further tests - making it very important that cheap collision tests are possible}), I think that first running the Minimum distance algorithm, and then the Axis-separation test would improve the run-time in most instances, instead of only running the Axis-separation test.
 
 \subsection{Creating RSS from multiple points}
-In order for the RSS to be a useful data-structure, it is clear that I have to find an algorithm that given a set of points, constructs a RSS that contains all of the points. The primary quality measurement should be the tightness of the volume.
+\label{multiple-points}
+In order for the RSS to be a useful BV, it is clear that I have to find an algorithm that given a set of points can construct a RSS that contains them all. The primary quality measurement should be the tightness of the volume.
 
-In the implemented algorithm I uses the properties of the eigen vectors from the covariance matrix. The idea is to use the eigen vectors to decide the vectors for the longest side (the eigen-vector with the greatest length), the second longest side (the eigen-vector with the second greatest length) and the radius (the eigen-vector with the smallest length). For each of these vectors v, I then create the plane p that goes through origo with v, project all the points onto p, and then finds the greatest distance between all pairs of projected points, which then is used as the the length of v.
-\hide{
-While I find the pair with the greatest distance for the 3 vectors, I also find the point that lies between these two points. Since these points are likely to be different, find the absolute difference of the 3 points 3 coordinates, and add these values to their respective vector's length. The center point can then be chosen arbitrarily.
-}
+In the implemented algorithm I uses the properties of the eigen vectors from the covariance matrix. 
+I use the eigen vectors to decide which should be the longest side (the eigen-vector with the greatest length), the second longest side (the eigen-vector with the second greatest length) and the radius (the eigen-vector with the smallest length). For each of these vectors v, I then create the plane p that goes through origo with v, project all the points onto p, and then finds the greatest distance between all pairs of projected points, which then is used as the the length of v.
+
 \begin{algorithm}[H]
   \caption{CreateRSSContainingPoints}
   \label{create-algo}
@@ -108,6 +146,8 @@ While I find the pair with the greatest distance for the 3 vectors, I also find 
   \SetKwData{threedeeRec}{3dRec}
   \SetKwData{return}{return}
   \SetKwData{p}{p}
+  \SetKwData{obox}{obbBox}
+  \SetKwData{rss}{rss}
   \SetKwInOut{Input}{input} \SetKwInOut{Output}{output}
   \dontprintsemicolon
   \Input{A set P of n points in 3 dimensions}
@@ -115,52 +155,66 @@ While I find the pair with the greatest distance for the 3 vectors, I also find 
   \covar $\gets$ makeCovarainceMatrix(P)\;
   \eigen $\gets$ getEigen(\covar) \;
   \eigen $\gets$ sort(\eigen) \;
-  (longest, centerPoint1) $\gets$ getLongestDistance(\eigen[2], points) \;
-  (middle, centerPoint2) $\gets$ getLongestDistance(\eigen[1], points) \;
-  (shortest, centerPoint3) $\gets$ getLongestDistance(\eigen[0], points) \;
-  centerPoint $\gets$ points.getCenteroid() \;
+  \obox $\gets$ makeOBB(points) \;
+  length = \obox.length\;
+  width = \obox.width\;
+  radius = \obox.height \;
+  centerPoint $\gets$ \obox.getCenter() \;
   subtract shortest from longest and middle
-  \threedeeRec $\gets$ 3dRec(centerPoint1, \eigen[2].scaledTo(longest), \eigen[1].scaledTo(middle)) \;
-  \return RSS(\threedeeRec, shortest) \;
+  \threedeeRec $\gets$ 3dRec(centerPoint, \eigen[1].scaledTo(width), \eigen[0].scaledTo(length)) \;
+  \rss $\gets$ RSS(\threedeeRec, radius) \;
+  \obox.length += radius \;
+  \obox.width += radius \;
+  \rss.\obox = \obox \;
+  \return rss
 \end{algorithm}
 
 \subsubsection{Asymptotic Runtime}
-The subroutine that finds the covariance matrix for algorithm \ref{create-algo} runs in $O(n)$. The subroutine that finds the distance between every pair of of points runs in $O(n^2)$, and everything else runs in constant time. Thus the algorithm must have an asymptotic run-time of $O(n^2)$.
+The subroutine that finds the covariance matrix for algorithm \ref{create-algo} runs in $O(n)$. The subroutine that creates the OBB runs in $O(n)$, and everything else runs in constant time. Thus the algorithm must have an asymptotic run-time of $O(n)$.
 
 \subsection{Algorithm to create a RSS containing 2 RSS'}
-In order to combine  2 RSS', rss1 and rss2, I take all the points that define the RSS' and then create a new RSS from the combined pointset. 
+In order to combine  2 RSS', rss1 and rss2, I take the corner points of the 2 RSS', and create a new RSS rss3 from the combined point-set. I then take the maximum of radii from rss1 rss2, and add it to the radius of rss3. I have to add the extra radius, sine otherwise some of the points rss1 and rss2 contain will not be contained in rss3.
 
 \begin{algorithm}[H]
   \caption{CombinedRSS}
   \label{combine-algo}
   \SetKwData{points}{pointsSet}
-  \SetKwData{crss}{CombinedRSS}
+  \SetKwData{crss}{rss3}
   \SetKwData{return}{return}
   \SetKwInOut{Input}{input} \SetKwInOut{Output}{output}
   \dontprintsemicolon
   \Input{2 RSS' rss1 and rss2}
   \Output{A RSS that contains both RSS'}
   Initialize \points \;
-  Add points(rss1) and points(rss2) to \points \;
-  \return CreateRSSContainingPoints(\points) \;
+  Add cornerPoints(rss1) and cornerPoints(rss2) to \points \;
+  \crss $\gets$ CreateRSSContainingPoints(\points) \;
+  maxRadius $\gets$ max(radius(rss1), radius(rss2)) \;
+  \crss.radius $\gets$ \crss.radius + maxRadius \;
+  \return \crss \;
 \end{algorithm}
 
 \subsubsection{Asymptotic Runtime}
-It is clear that algorithm \ref{combine-algo} must run in $O(n^2)$, where n is the combined number of pionts in both RSS1 and RSS2. 
-
-%\subsection{Non-axis aligned rectangle}
+It is clear that algorithm \ref{combine-algo} must run in $O(1)$, since it always will be created from 8 points. 
 
 \subsection{Efficiency}
-I will in the following assume that all RSS are created in order to contain a point set (this is a reasonable assumption in practice). Let a normal RSS be an RSS that have been created so that all the points in the point set are contained in an OBB inside the RSS (i.e. no points lie in the half-cylinder part on the edges of the RSS). \Sfixme{Make illustration} 
+I will in the following assume that all RSS are created in order to contain a point set. Let a normal RSS be an RSS that have been created so that all the points in the point set are contained in an OBB inside the RSS (i.e. no points lie in the half-cylinder part on the edges of the RSS). \Sfixme{Make illustration} 
 
-From \ref{rss} it is clear that a normal RSS will essentially create a Oriented Bounding Box around the points, together with 2 cylinders around the edges. From this it is clear that if RSS are ever to be more efficient than OBB, then there must be a way to use a property of the RSS that the OBB's do not have. 
+From \ref{rss} it is clear that a naively created RSS will essentially create a Oriented Bounding Box around the points, together with 2 cylinders around the edges. From this it is clear that if RSS are ever to be more efficient than OBB, then either the naive method has to be replaced by a smarter version, and the unique properties of the RSS that the OBB's do not have must be exploited. 
 
-The only real property that the RSS has that the OBB does not, is the radius. This is what we are trying to exploit in the minimum distance check. As detailed in the Results section, this exploit does not lead to greatly improved run time, and it is therefore likely that a RSS with a larger volume than an OBB will never be more efficient. \Sfixme{These 2 last subsections are suspect}
+For talks on optimizing the volume see section \ref{optimized-volume}. The only real property that the RSS has that the OBB does not, is the radius. This is what we are trying to exploit in the minimum distance check. From this it is clear that in order to optimize the overlap algorithm for RSS', the effort should be focused on the Minimum distance check. As detailed in the section \ref{results}, that as currently implemented minimum distance check does not currently lead to a greatly improved run time. I am however confident that there exists faster implementations to check the distance between 2 line-segments. 
+Furthermore, as I mentioned in section \ref{lit}, I have misunderstood some of the finer points of both \cite{Larsen99fastproximity} and \cite{larsen00fast}, which meant to include an extra check that should eliminate the need for anything but the minimum distance check. 
 
-\hide{
-\subsection{Optimized volume} 
+\subsection{Optimized volume}
+\label{optimized-volume}
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{figures/rim}
+\caption{\label{rim} An illustration (seen from above) of an RSS created by the current implementation. It is clear that the radius around the rectangle (in the x and y-coordinate) is superfluous, and that a much tighter fit could be archived}
+\end{figure}
 
-Since we in the Minimal distance check, makes sure that the distance between the 2 rectangles is less than the combined radius of the 2 RSS' i.e. if any part of the 2 RSS' intersect - also the part that does not lie above or below the RSS' rectangle. From this it is apparent that points could be placed outside the rectangle, but inside the Outer RSS, then the volume of the RSS could, at least in certain cases, become smaller. Finding this optimized volume would most likely take more time than algorithm \ref{create-algo}, and it unknown how much faster the overlap function would become, so it is likely worth a research project of itself. \Sfixme{Should I really mention this - is there a better way writing this section - most likely there is}
-}
+In the current implementation of algorithm \ref{combine-algo}, the created RSS is essentially an OBB with the radius tacked on on the sides. This is clearly not optimal, as seen in figure \ref{rim}. It is clear that we cannot reduce the radius, since this would mean we would miss some of the points that lies above and below the rectangle. Thus we can only reduce the volume by making the inner rectangle smaller. This however, is not a trivial task. For instance, just reducing the length and the width with the radius is not sure to resolve in a legal RSS, as some of the points might lie in the corners of the OBB, and will thus in the new RSS lie just outside the rounded corners. This problem is also highlighted in \cite{Larsen99fastproximity} section 4.1, where they, deal with it, in practice, increasing both the length and the width of the rectangle until all points are covered. However, they do not explicitly describe how much they increase the rectangle with (or how they find the value), nor how they find out that an increase is necessary.
+
+A possible solution, which has not been implemented in this project, could be to start with a minimal rectangle, i.e. a rectangle where the radius has been subtracted from both the width and the length. Then, for each point in the point set that defines the RSS, we compare the minimum distance $\delta$ from the current rectangle and the radius r. If $\delta <=$ r, then the point is inside the current RSS, and nothing has to be done, if however $\delta >$ r, then both the width and the length is increased by the $\delta -$ r, so that the point that before lay outside the RSS now lies inside of it\footnote{Since we only increase the width and length, we can be sure that the points that have been checked before will still lie inside the RSS}.
+ 
 \subsection{Conclusion}
-I have in this section presented the main problem that my algorithms are trying to solve - to find out whether 2 RSS' overlap, and how to create a new RSS that will contain all the points of 2 other RSS'. I have presented both algorithms on both high- and low-level, and have at the end discussed how to minimize the volume by using the rim optimally, discussed how the RSS is unlikely to become more efficient than the OBB.
+I have in this section presented the main problem that my algorithms are trying to solve - to find out whether 2 RSS' overlap, and how to create a new RSS that will contain all the points of 2 other RSS'. I have presented both algorithms on both high- and low-level, and have at the end discussed how to minimize the volume by using the rim optimally, discussed how the RSS is unlikely to become more efficient than the OBB, unless the radius feature of the RSS BV is fully exploited.
