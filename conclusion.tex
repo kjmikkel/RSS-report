@@ -2,23 +2,22 @@
 
 \section{Conclusion}
 \label{conclusion}
-\subsection{Introduction}
-In this section I will sum up the project and discuss possible future projects. 
+
+\subsection{Status}
+I have successfully implemented the RSS BV, all of the 3 methods that I sat out to implement, and I have tested the efficiency of the implementation against the OBB and LSS.
 
 \subsection{Efficiency of solution}
 It is clear that compared to other, already implemented Bounding Volumes in ProGAL, such as LSS', and OBB, the current implementation of the RSS is not efficient, neither when it comes to the tightness of the fit, nor with the time required for overlap detection.
 
-It is therefore my assessment that the current implementation is not ready for use in the ProGAL framework as an alternative for the OBB. If the RSS BV is to become more viable choice, then I believe that the overlap detection should be improved.
-
-main effort should be used primarily on finding a better overlap test, and secondly on optimizing the volume of the RSS.
+It is therefore my assessment that the current implementation is not ready for use in the ProGAL framework as an alternative for the OBB. If the RSS BV is to become more viable choice, then I believe that the overlap detection should be improved, primarily by focusing on the minimum distance algorithm, and secondly on optimizing the volume of the RSS.
 
 \subsection{Future work}
-In order to truly gauge the effectiveness of the RSS overlap detection described in \cite{larsen00fast} and \cite{Larsen99fastproximity}, a future project could try to improve the RSS overlap detection by aggressively optimizing the code that finds the minimum distance between 2 edges and implementing the slab-method described in the 2 articles, removing the need for the Axis-separation check.
+In order to truly gauge the effectiveness of the RSS overlap detection described in \cite{larsen00fast} and \cite{Larsen99fastproximity}, a future project could try to improve the RSS overlap detection by aggressively optimizing the code that finds the minimum distance between 2 edges and implementing the slab-method described in \cite{larsen00fast} and \cite{Larsen99fastproximity}, removing the need for the Axis-separation check.
 
-Another aspect worth looking into would be to see if the volume of the RSS could be reduced. Possibly as described in \ref{optimized-volume}. I am not sure that improving the tightness of the bound, of the RSS would necessarily improve the time of the overlap detection, but it is likely to improve improve the RSS' BV run time in practice.
+Another aspect worth looking into would be to see if the volume of the RSS could be reduced. Possibly as described in \ref{optimized-volume}. I am not sure that improving the tightness of the RSS would necessarily improve the time spent on the overlap detection, but it is likely to improve the RSS' BV run time when integrated into the BVH.
 
 If either the tightness of the fit or the overlap detection algorithm is improved, it would be interesting to test the efficiency of the RSS' in practice, by implementing it in the BVH in ProGAL, and test it thoroughly against OBBs. 
 
 Another Swept Sphere variations worth looking into is Triangular Swept Spheres (TSS), where instead of a point, line or rectangle (as is the case in PSS, LSS, and RSS respectively), the enter of the sphere swept through a triangular form in 3 dimensional space. 
 
-Another project could be whether a hybrid OBB/RSS BV would be interesting (in order to merge the relative tightness of the OBB, and some of the features of RSS). One possible hybridization would be to implement a variation of the OBB, that has a rectangle and a radius in the direction of the normal vector, and then attempting to implement a appropriate variation of the minimum distance slab-method found in \cite{larsen00fast} and \cite{Larsen99fastproximity} (only resorting to the Axis-separation test if the slab-method did not indicate an overlap).
+Another project could be whether a hybrid OBB/RSS BV would be interesting (in order to merge the current, better fit, of the OBB, and some of the properties of the RSS). One possible hybridization would be to implement a variation of the OBB, that has a rectangle and a radius in the direction of the normal vector, and then attempting to implement a appropriate variation of the minimum distance slab-method found in \cite{larsen00fast} and \cite{Larsen99fastproximity} (only resorting to the Axis-separation test if the slab-method did not indicate an overlap).
